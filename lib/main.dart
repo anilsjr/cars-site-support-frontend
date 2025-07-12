@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'app_exports.dart';
 import 'core/services/storage_service.dart' as storage;
 
@@ -10,6 +9,9 @@ void main() async {
   await storage.StorageService().initialize();
   NetworkService().initialize();
 
+  // Initialize dependency injection
+  DependencyInjection.init();
+
   runApp(const MyApp());
 }
 
@@ -18,19 +20,13 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GetMaterialApp(
+    return MaterialApp.router(
       title: 'Vehicle Site Support',
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.system,
-      initialRoute: _getInitialRoute(),
-      getPages: AppPages.routes,
+      routerConfig: AppRouter.router,
       debugShowCheckedModeBanner: false,
     );
-  }
-
-  String _getInitialRoute() {
-    // Always start with login route
-    return '/login';
   }
 }

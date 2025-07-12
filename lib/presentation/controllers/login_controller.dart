@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../core/services/storage_service.dart';
-import '../../../core/services/network_service.dart';
+import 'package:go_router/go_router.dart';
+import '../../domain/usecases/auth_usecases.dart';
 import 'package:dio/dio.dart';
 
 class LoginController extends GetxController {
@@ -11,6 +11,16 @@ class LoginController extends GetxController {
 
   final RxBool isPasswordVisible = false.obs;
   final RxBool isLoading = false.obs;
+
+  // Use cases - injected via dependency injection
+  late final LoginUseCase _loginUseCase;
+
+  @override
+  void onInit() {
+    super.onInit();
+    // Get use cases from dependency injection
+    _loginUseCase = Get.find<LoginUseCase>();
+  }
 
   @override
   void onClose() {
@@ -28,9 +38,8 @@ class LoginController extends GetxController {
       return 'User ID is required';
     }
     if (value.length < 8 || value.length > 100) {
-      return 'User ID must of 8 ';
+      return 'User ID must be at least 8 characters';
     }
-
     return null;
   }
 
@@ -39,7 +48,7 @@ class LoginController extends GetxController {
       return 'Password is required';
     }
     if (value.length < 4 || value.length > 100) {
-      return 'Password must be of 4 digits';
+      return 'Password must be at least 4 characters';
     }
     return null;
   }
@@ -48,44 +57,34 @@ class LoginController extends GetxController {
     if (!formKey.currentState!.validate()) {
       return;
     }
+
     isLoading.value = true;
+
     try {
-      // Make API call to localhost:3000/api/auth/login
-      final response = await NetworkService().post(
-        'api/auth/login',
-        data: {
-          'user_id': userIdController.text,
-          'password': passwordController.text,
-        },
+      // Use clean architecture - call login use case
+      final user = await _loginUseCase.execute(
+        userIdController.text,
+        passwordController.text,
       );
 
-      if (response.statusCode == 200) {
-        // Save token if provided in response
-        if (response.data['token'] != null) {
-          await StorageService().saveToken(response.data['token']);
-        }
-
-        // Save user data
-        await StorageService().saveUserData({
-          'user_id': userIdController.text,
-          'name': response.data['name'] ?? 'User',
-        });
-
-        Get.offAllNamed('/dashboard');
-        Get.snackbar(
-          'Success',
-          'Login successful!',
-          backgroundColor: Colors.green,
-          colorText: Colors.white,
-        );
-      } else {
-        throw Exception('Login failed');
+      // Navigate to dashboard on successful login using go_router
+      if (Get.context != null) {
+        Get.context!.go('/dashboard');
       }
+
+      Get.snackbar(
+        'Success',
+        'Login successful! Welcome, ${user.firstName}',
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+      );
     } on DioException catch (e) {
       String errorMessage = 'Login failed';
 
       if (e.response?.statusCode == 401) {
         errorMessage = 'Invalid credentials';
+      } else if (e.response?.statusCode == 422) {
+        errorMessage = 'Invalid input data';
       } else if (e.response?.statusCode == 500) {
         errorMessage = 'Server error';
       } else if (e.type == DioExceptionType.connectionTimeout) {

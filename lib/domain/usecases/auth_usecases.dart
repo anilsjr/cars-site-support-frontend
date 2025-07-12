@@ -6,12 +6,12 @@ class LoginUseCase {
 
   LoginUseCase(this.repository);
 
-  Future<User> execute(String email, String password) async {
-    if (email.isEmpty || password.isEmpty) {
-      throw Exception('Email and password cannot be empty');
+  Future<User> execute(String userIdOrEmail, String password) async {
+    if (userIdOrEmail.isEmpty || password.isEmpty) {
+      throw Exception('User ID/Email and password cannot be empty');
     }
 
-    return await repository.login(email, password);
+    return await repository.login(userIdOrEmail, password);
   }
 }
 

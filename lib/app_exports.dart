@@ -4,6 +4,7 @@ export 'core/theme/app_theme.dart';
 export 'core/utils/validators.dart';
 export 'core/services/network_service.dart';
 export 'core/services/storage_service.dart';
+export 'core/services/dependency_injection.dart';
 
 // Domain exports
 export 'domain/entities/user.dart';
@@ -18,6 +19,8 @@ export 'data/repositories/user_repository_impl.dart';
 // Presentation exports
 export 'presentation/controllers/login_controller.dart';
 export 'presentation/screens/login/login_screen.dart';
+export 'presentation/screens/dashboard/dashboard_screen.dart';
+export 'presentation/screens/dashboard/dashboard_content_pages.dart';
 export 'presentation/bindings/login_binding.dart';
 
 export 'presentation/widgets/custom_button.dart';
@@ -26,3 +29,4 @@ export 'presentation/widgets/common_widgets.dart';
 
 // Routes
 export 'routes/app_pages.dart';
+export 'routes/app_router.dart';

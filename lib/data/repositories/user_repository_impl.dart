@@ -50,9 +50,9 @@ class UserRepositoryImpl implements UserRepository {
   }
 
   @override
-  Future<User> login(String email, String password) async {
+  Future<User> login(String userIdOrEmail, String password) async {
     try {
-      final user = await remoteDataSource.login(email, password);
+      final user = await remoteDataSource.login(userIdOrEmail, password);
 
       // Save user data and token to local storage
       await storageService.saveUserData(user.toJson());
