@@ -44,9 +44,7 @@ class NetworkService {
           if (!options.path.contains('/login') &&
               !options.path.contains('/register')) {
             final token = StorageService().getToken();
-            if (token != null) {
-              options.headers['Authorization'] = 'Bearer $token';
-            }
+            options.headers['Authorization'] = 'Bearer $token';
           }
           handler.next(options);
         },
