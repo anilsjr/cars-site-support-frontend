@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../core/utils/validators.dart';
 import '../../../core/services/storage_service.dart';
 import '../../../core/services/network_service.dart';
 import 'package:dio/dio.dart';
@@ -28,20 +27,28 @@ class LoginController extends GetxController {
     if (value == null || value.isEmpty) {
       return 'User ID is required';
     }
+    if (value.length < 8 || value.length > 100) {
+      return 'User ID must of 8 ';
+    }
+
     return null;
   }
 
   String? validatePassword(String? value) {
-    return Validators.validatePassword(value);
+    if (value == null || value.isEmpty) {
+      return 'Password is required';
+    }
+    if (value.length < 4 || value.length > 100) {
+      return 'Password must be of 4 digits';
+    }
+    return null;
   }
 
   Future<void> login() async {
     if (!formKey.currentState!.validate()) {
       return;
     }
-
     isLoading.value = true;
-
     try {
       // Make API call to localhost:3000/api/auth/login
       final response = await NetworkService().post(

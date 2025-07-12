@@ -40,10 +40,13 @@ class NetworkService {
     _dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
-          // Add authentication token if available
-          final token = StorageService().getToken();
-          if (token != null) {
-            options.headers['Authorization'] = 'Bearer $token';
+          // Skip auth for login/register endpoints
+          if (!options.path.contains('/login') &&
+              !options.path.contains('/register')) {
+            final token = StorageService().getToken();
+            if (token != null) {
+              options.headers['Authorization'] = 'Bearer $token';
+            }
           }
           handler.next(options);
         },
