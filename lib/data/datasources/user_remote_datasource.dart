@@ -3,7 +3,7 @@ import '../../core/services/network_service.dart';
 import '../models/user_model.dart';
 
 abstract class UserRemoteDataSource {
-  Future<UserModel> login(String email, String password);
+  Future<UserModel> login(String userIdOrEmail, String password);
   Future<UserModel> getCurrentUser();
   Future<void> logout();
   Future<UserModel> updateProfile(UserModel user);
@@ -15,15 +15,31 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
   UserRemoteDataSourceImpl(this.networkService);
 
   @override
-  Future<UserModel> login(String email, String password) async {
+  Future<UserModel> login(String userIdOrEmail, String password) async {
     try {
       final response = await networkService.post(
         '/auth/login',
-        data: {'email': email, 'password': password},
+        data: {'user_id': userIdOrEmail, 'password': password},
       );
 
       if (response.statusCode == 200) {
-        return UserModel.fromJson(response.data['user']);
+        final responseData = response.data;
+        if (responseData['status'] == true && responseData['data'] != null) {
+          final userData = responseData['data']['user'];
+          final accessToken =
+              responseData['data']['accessToken'] ?? userData['accessToken'];
+
+          // Add the access token to user data if it exists
+          if (accessToken != null) {
+            userData['accessToken'] = accessToken;
+          }
+
+          return UserModel.fromJson(userData);
+        } else {
+          throw Exception(
+            'Login failed: ${responseData['message'] ?? 'Unknown error'}',
+          );
+        }
       } else {
         throw Exception('Login failed: ${response.statusMessage}');
       }

@@ -19,18 +19,33 @@ class UserRepositoryImpl implements UserRepository {
       // First check local storage
       final userData = await storageService.getUserData();
       if (userData != null) {
-        return UserModel.fromJson(userData);
+        // Check if we have a valid token
+        final token = await storageService.getToken();
+        if (token != null) {
+          return UserModel.fromJson(userData);
+        }
       }
 
-      // If not in local storage, try to get from API
-      final token = storageService.getToken();
+      // If not in local storage or no token, try to get from API
       final user = await remoteDataSource.getCurrentUser();
       await storageService.saveUserData(user.toJson());
+
+      // Save the access token if available
+      if (user.accessToken != null) {
+        await storageService.saveToken(user.accessToken!);
+      }
+
       return user;
     } catch (e) {
-      // If API fails, return cached data if available
-      final userData = await storageService.getUserData();
-      return UserModel.fromJson(userData!);
+      // If API fails, return cached data if available and we have a token
+      final token = await storageService.getToken();
+      if (token != null) {
+        final userData = await storageService.getUserData();
+        if (userData != null) {
+          return UserModel.fromJson(userData);
+        }
+      }
+      return null;
     }
   }
 
@@ -41,7 +56,11 @@ class UserRepositoryImpl implements UserRepository {
 
       // Save user data and token to local storage
       await storageService.saveUserData(user.toJson());
-      // Note: Token should be saved in the network interceptor or login response
+
+      // Save the access token
+      if (user.accessToken != null) {
+        await storageService.saveToken(user.accessToken!);
+      }
 
       return user;
     } catch (e) {
