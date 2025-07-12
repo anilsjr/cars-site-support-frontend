@@ -3,6 +3,7 @@ export 'core/constants/app_constants.dart';
 export 'core/theme/app_theme.dart';
 export 'core/utils/validators.dart';
 export 'core/utils/formatters.dart';
+export 'core/utils/responsive.dart';
 export 'core/services/network_service.dart';
 export 'core/services/storage_service.dart';
 
@@ -38,6 +39,7 @@ export 'presentation/bindings/data_list_binding.dart';
 export 'presentation/widgets/custom_button.dart';
 export 'presentation/widgets/custom_text_field.dart';
 export 'presentation/widgets/common_widgets.dart';
+export 'presentation/widgets/responsive_widgets.dart';
 
 // Routes
 export 'routes/app_pages.dart';

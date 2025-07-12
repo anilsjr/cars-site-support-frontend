@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'core/theme/app_theme.dart';
+import 'app_exports.dart';
 import 'core/services/storage_service.dart' as storage;
-import 'core/services/network_service.dart';
-import 'routes/app_pages.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

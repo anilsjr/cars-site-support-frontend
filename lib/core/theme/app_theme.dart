@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'responsive_typography.dart';
 
 class AppTheme {
   static ThemeData lightTheme = ThemeData(
@@ -20,6 +21,8 @@ class AppTheme {
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
       ),
     ),
+    // Add responsive text theme
+    textTheme: ResponsiveTypography.lightTextTheme,
   );
 
   static ThemeData darkTheme = ThemeData(
@@ -41,5 +44,7 @@ class AppTheme {
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
       ),
     ),
+    // Add responsive text theme
+    textTheme: ResponsiveTypography.darkTextTheme,
   );
 }

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../controllers/dashboard_controller.dart';
+import '../../widgets/responsive_widgets.dart';
+import '../../../core/utils/responsive.dart';
 
 class DashboardScreen extends GetView<DashboardController> {
   const DashboardScreen({super.key});
@@ -17,19 +19,31 @@ class DashboardScreen extends GetView<DashboardController> {
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
+      body: ResponsiveContainer(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            ResponsiveText(
               'Welcome to Vehicle Site Support',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              mobileFontSize: 20,
+              tabletFontSize: 24,
+              desktopFontSize: 28,
+              fontWeight: FontWeight.bold,
             ),
-            const SizedBox(height: 20),
+            SizedBox(
+              height: Responsive.getResponsiveValue(
+                context,
+                mobile: 16.0,
+                tablet: 20.0,
+                desktop: 24.0,
+              ),
+            ),
             Expanded(
-              child: GridView.count(
-                crossAxisCount: 2,
+              child: ResponsiveGrid(
+                mobileColumns: 1,
+                tabletColumns: 2,
+                desktopColumns: 3,
+                largeDesktopColumns: 4,
                 crossAxisSpacing: 16,
                 mainAxisSpacing: 16,
                 children: [
@@ -67,29 +81,50 @@ class DashboardScreen extends GetView<DashboardController> {
     required IconData icon,
     required VoidCallback onTap,
   }) {
-    return Card(
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
+    return ResponsiveLayoutBuilder(
+      builder: (context, screenType, width) {
+        // Responsive icon size
+        final iconSize = Responsive.getResponsiveValue(
+          context,
+          mobile: 40.0,
+          tablet: 48.0,
+          desktop: 56.0,
+        );
+
+        // Responsive font size
+        final fontSize = Responsive.getResponsiveValue(
+          context,
+          mobile: 14.0,
+          tablet: 16.0,
+          desktop: 18.0,
+        );
+
+        return ResponsiveCard(
+          onTap: onTap,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, size: 48, color: Get.theme.primaryColor),
-              const SizedBox(height: 12),
+              Icon(icon, size: iconSize, color: Get.theme.primaryColor),
+              SizedBox(
+                height: Responsive.getResponsiveValue(
+                  context,
+                  mobile: 8.0,
+                  tablet: 12.0,
+                  desktop: 16.0,
+                ),
+              ),
               Text(
                 title,
-                style: const TextStyle(
-                  fontSize: 16,
+                style: TextStyle(
+                  fontSize: fontSize,
                   fontWeight: FontWeight.w600,
                 ),
                 textAlign: TextAlign.center,
               ),
             ],
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }

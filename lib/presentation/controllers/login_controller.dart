@@ -2,18 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../core/utils/validators.dart';
 import '../../../core/services/storage_service.dart';
+import '../../../core/services/network_service.dart';
+import 'package:dio/dio.dart';
 
 class LoginController extends GetxController {
   final formKey = GlobalKey<FormState>();
-  final emailController = TextEditingController();
-  final passwordController = TextEditingController();
+  final userIdController = TextEditingController(text: 'ANIL05101');
+  final passwordController = TextEditingController(text: 'data@1234');
 
   final RxBool isPasswordVisible = false.obs;
   final RxBool isLoading = false.obs;
 
   @override
   void onClose() {
-    emailController.dispose();
+    userIdController.dispose();
     passwordController.dispose();
     super.onClose();
   }
@@ -22,8 +24,11 @@ class LoginController extends GetxController {
     isPasswordVisible.value = !isPasswordVisible.value;
   }
 
-  String? validateEmail(String? value) {
-    return Validators.validateEmail(value);
+  String? validateUserId(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'User ID is required';
+    }
+    return null;
   }
 
   String? validatePassword(String? value) {
@@ -38,19 +43,25 @@ class LoginController extends GetxController {
     isLoading.value = true;
 
     try {
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 2));
+      // Make API call to localhost:3000/api/auth/login
+      final response = await NetworkService().post(
+        'api/auth/login',
+        data: {
+          'user_id': userIdController.text,
+          'password': passwordController.text,
+        },
+      );
 
-      // For demo purposes, accept any email/password
-      if (emailController.text.isNotEmpty &&
-          passwordController.text.isNotEmpty) {
-        // Save token (demo)
-        await StorageService().saveToken('demo_token_123');
+      if (response.statusCode == 200) {
+        // Save token if provided in response
+        if (response.data['token'] != null) {
+          await StorageService().saveToken(response.data['token']);
+        }
 
-        // Save user data (demo)
+        // Save user data
         await StorageService().saveUserData({
-          'email': emailController.text,
-          'name': 'Demo User',
+          'user_id': userIdController.text,
+          'name': response.data['name'] ?? 'User',
         });
 
         Get.offAllNamed('/dashboard');
@@ -61,8 +72,27 @@ class LoginController extends GetxController {
           colorText: Colors.white,
         );
       } else {
-        throw Exception('Invalid credentials');
+        throw Exception('Login failed');
       }
+    } on DioException catch (e) {
+      String errorMessage = 'Login failed';
+
+      if (e.response?.statusCode == 401) {
+        errorMessage = 'Invalid credentials';
+      } else if (e.response?.statusCode == 500) {
+        errorMessage = 'Server error';
+      } else if (e.type == DioExceptionType.connectionTimeout) {
+        errorMessage = 'Connection timeout';
+      } else if (e.type == DioExceptionType.connectionError) {
+        errorMessage = 'Connection error';
+      }
+
+      Get.snackbar(
+        'Error',
+        errorMessage,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
     } catch (e) {
       Get.snackbar(
         'Error',
