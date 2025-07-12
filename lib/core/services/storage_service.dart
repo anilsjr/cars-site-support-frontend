@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:get_storage/get_storage.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../constants/app_constants.dart';
 
 class StorageService {
@@ -7,36 +9,48 @@ class StorageService {
   StorageService._internal();
 
   late GetStorage _box;
+  static const FlutterSecureStorage _secureStorage = FlutterSecureStorage(
+    aOptions: AndroidOptions(encryptedSharedPreferences: true),
+    webOptions: WebOptions(
+      dbName: 'VehicleSiteSecureStorage',
+      publicKey: 'VehicleSitePublicKey',
+    ),
+  );
 
   Future<void> initialize() async {
     await GetStorage.init();
     _box = GetStorage();
   }
 
-  // Token operations
+  // Token operations (using secure storage)
   Future<void> saveToken(String token) async {
-    await _box.write(AppConstants.tokenKey, token);
+    await _secureStorage.write(key: AppConstants.tokenKey, value: token);
   }
 
-  String? getToken() {
-    return _box.read<String>(AppConstants.tokenKey);
+  Future<String?> getToken() async {
+    return await _secureStorage.read(key: AppConstants.tokenKey);
   }
 
   Future<void> removeToken() async {
-    await _box.remove(AppConstants.tokenKey);
+    await _secureStorage.delete(key: AppConstants.tokenKey);
   }
 
-  // User data operations
+  // User data operations (using secure storage)
   Future<void> saveUserData(Map<String, dynamic> userData) async {
-    await _box.write(AppConstants.userKey, userData);
+    final jsonString = jsonEncode(userData);
+    await _secureStorage.write(key: AppConstants.userKey, value: jsonString);
   }
 
-  Map<String, dynamic>? getUserData() {
-    return _box.read<Map<String, dynamic>>(AppConstants.userKey);
+  Future<Map<String, dynamic>?> getUserData() async {
+    final jsonString = await _secureStorage.read(key: AppConstants.userKey);
+    if (jsonString != null) {
+      return jsonDecode(jsonString) as Map<String, dynamic>;
+    }
+    return null;
   }
 
   Future<void> removeUserData() async {
-    await _box.remove(AppConstants.userKey);
+    await _secureStorage.delete(key: AppConstants.userKey);
   }
 
   // Theme operations
@@ -63,9 +77,27 @@ class StorageService {
 
   Future<void> clearAll() async {
     await _box.erase();
+    await _secureStorage.deleteAll();
   }
 
   bool hasData(String key) {
     return _box.hasData(key);
+  }
+
+  // Secure storage operations
+  Future<void> writeSecure(String key, String value) async {
+    await _secureStorage.write(key: key, value: value);
+  }
+
+  Future<String?> readSecure(String key) async {
+    return await _secureStorage.read(key: key);
+  }
+
+  Future<void> removeSecure(String key) async {
+    await _secureStorage.delete(key: key);
+  }
+
+  Future<bool> hasSecureData(String key) async {
+    return await _secureStorage.containsKey(key: key);
   }
 }
