@@ -72,7 +72,7 @@ class LoginScreen extends StatelessWidget {
                               child: ElevatedButton(
                                 onPressed: controller.isLoading.value
                                     ? null
-                                    : controller.login,
+                                    : () => controller.login(context),
                                 child: controller.isLoading.value
                                     ? const CircularProgressIndicator()
                                     : const Text(

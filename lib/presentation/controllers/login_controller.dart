@@ -53,7 +53,7 @@ class LoginController extends GetxController {
     return null;
   }
 
-  Future<void> login() async {
+  Future<void> login([BuildContext? context]) async {
     if (!formKey.currentState!.validate()) {
       return;
     }
@@ -61,15 +61,33 @@ class LoginController extends GetxController {
     isLoading.value = true;
 
     try {
+      print('Starting login process...');
+
       // Use clean architecture - call login use case
       final user = await _loginUseCase.execute(
         userIdController.text,
         passwordController.text,
       );
 
+      print('Login successful, user: ${user.firstName}');
+
+      // Clear loading state immediately after login success
+      isLoading.value = false;
+
       // Navigate to dashboard on successful login using go_router
-      if (Get.context != null) {
-        Get.context!.go('/dashboard');
+      final navContext = context ?? Get.context;
+      print('Navigation context: $navContext, mounted: ${navContext?.mounted}');
+
+      if (navContext != null) {
+        print('Current route: ${GoRouterState.of(navContext).uri.path}');
+
+        if (navContext.mounted) {
+          print('Attempting to navigate to /dashboard');
+          navContext.go('/dashboard');
+          print('Navigation command sent');
+        }
+      } else {
+        print('No valid context for navigation');
       }
 
       Get.snackbar(
@@ -79,6 +97,8 @@ class LoginController extends GetxController {
         colorText: Colors.white,
       );
     } on DioException catch (e) {
+      print('DioException caught: ${e.toString()}');
+      isLoading.value = false;
       String errorMessage = 'Login failed';
 
       if (e.response?.statusCode == 401) {
@@ -100,14 +120,14 @@ class LoginController extends GetxController {
         colorText: Colors.white,
       );
     } catch (e) {
+      print('General exception caught: ${e.toString()}');
+      isLoading.value = false;
       Get.snackbar(
         'Error',
         'Login failed: ${e.toString()}',
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
-    } finally {
-      isLoading.value = false;
     }
   }
 }

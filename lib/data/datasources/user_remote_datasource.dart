@@ -18,7 +18,7 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
   Future<UserModel> login(String userIdOrEmail, String password) async {
     try {
       final response = await networkService.post(
-        '/auth/login',
+        '/api/auth/login',
         data: {'user_id': userIdOrEmail, 'password': password},
       );
 
