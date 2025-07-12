@@ -132,7 +132,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildDrawer() {
-    return Drawer(child: _buildNavigationItems());
+    return Drawer(
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(0),
+          bottomLeft: Radius.circular(0),
+          topRight: Radius.circular(0),
+          bottomRight: Radius.circular(0),
+        ),
+      ),
+      child: _buildNavigationItems(),
+    );
   }
 
   Widget _buildNavigationItems() {
