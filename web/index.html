@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <!--
-    If you are serving your web app in a path other than the root, change the
+<head>  <title>vehicle_site_support_web</title>
+  <link rel="manifest" href="manifest.json">u are serving your web app in a path other than the root, change the
     href value below to reflect the base path you are serving from.
 
     The path provided below has to start and end with a slash "/" in order for
@@ -31,6 +30,23 @@
 
   <title>vehicle_site_support_web</title>
   <link rel="manifest" href="manifest.json">
+  
+  <script>
+    // Configure URL strategy to remove # from URLs
+    window.addEventListener('load', function(ev) {
+      // Download main.dart.js
+      _flutter.loader.loadEntrypoint({
+        serviceWorker: {
+          serviceWorkerVersion: serviceWorkerVersion,
+        },
+        onEntrypointLoaded: function(engineInitializer) {
+          engineInitializer.initializeEngine().then(function(appRunner) {
+            appRunner.runApp();
+          });
+        }
+      });
+    });
+  </script>
 </head>
 <body>
   <script src="flutter_bootstrap.js" async></script>
