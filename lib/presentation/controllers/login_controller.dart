@@ -68,15 +68,27 @@ class LoginController extends GetxController {
         userIdController.text,
         passwordController.text,
       );
-
       print('Login successful, user: ${user.firstName}');
 
       // Clear loading state immediately after login success
       isLoading.value = false;
 
-      // Navigate to dashboard on successful login using go_router
+      // Get navigation context
       final navContext = context ?? Get.context;
       print('Navigation context: $navContext, mounted: ${navContext?.mounted}');
+
+      // Show success message before navigation using ScaffoldMessenger
+      if (navContext != null && navContext.mounted) {
+        ScaffoldMessenger.of(navContext).showSnackBar(
+          SnackBar(
+            content: Text('Login successful! Welcome, ${user.firstName}'),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+
+      // Navigate to dashboard on successful login using go_router
 
       if (navContext != null) {
         print('Current route: ${GoRouterState.of(navContext).uri.path}');
@@ -89,13 +101,6 @@ class LoginController extends GetxController {
       } else {
         print('No valid context for navigation');
       }
-
-      Get.snackbar(
-        'Success',
-        'Login successful! Welcome, ${user.firstName}',
-        backgroundColor: Colors.green,
-        colorText: Colors.white,
-      );
     } on DioException catch (e) {
       print('DioException caught: ${e.toString()}');
       isLoading.value = false;
@@ -113,21 +118,32 @@ class LoginController extends GetxController {
         errorMessage = 'Connection error';
       }
 
-      Get.snackbar(
-        'Error',
-        errorMessage,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      // Show error message using ScaffoldMessenger if context is available
+      final errorContext = context ?? Get.context;
+      if (errorContext != null && errorContext.mounted) {
+        ScaffoldMessenger.of(errorContext).showSnackBar(
+          SnackBar(
+            content: Text(errorMessage),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
     } catch (e) {
       print('General exception caught: ${e.toString()}');
       isLoading.value = false;
-      Get.snackbar(
-        'Error',
-        'Login failed: ${e.toString()}',
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+
+      // Show error message using ScaffoldMessenger if context is available
+      final errorContext = context ?? Get.context;
+      if (errorContext != null && errorContext.mounted) {
+        ScaffoldMessenger.of(errorContext).showSnackBar(
+          SnackBar(
+            content: Text('Login failed: ${e.toString()}'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
     }
   }
 }
