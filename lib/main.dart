@@ -30,8 +30,7 @@ class MyApp extends StatelessWidget {
   }
 
   String _getInitialRoute() {
-    // Check if user is logged in
-    final token = storage.StorageService().getToken();
-    return token != null ? '/dashboard' : '/login';
+    // Always start with login route
+    return '/login';
   }
 }
