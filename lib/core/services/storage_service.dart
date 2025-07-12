@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:get_storage/get_storage.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:universal_html/html.dart' as html;
 import '../constants/app_constants.dart';
 
 class StorageService {
@@ -22,17 +23,17 @@ class StorageService {
     _box = GetStorage();
   }
 
-  // Token operations (using secure storage)
+  // Token operations (using browser cookies)
   Future<void> saveToken(String token) async {
-    await _secureStorage.write(key: AppConstants.tokenKey, value: token);
+    _setCookie(AppConstants.tokenKey, token);
   }
 
   Future<String?> getToken() async {
-    return await _secureStorage.read(key: AppConstants.tokenKey);
+    return _getCookie(AppConstants.tokenKey);
   }
 
   Future<void> removeToken() async {
-    await _secureStorage.delete(key: AppConstants.tokenKey);
+    _removeCookie(AppConstants.tokenKey);
   }
 
   // User data operations (using secure storage)
@@ -99,5 +100,40 @@ class StorageService {
 
   Future<bool> hasSecureData(String key) async {
     return await _secureStorage.containsKey(key: key);
+  }
+
+  // Cookie helper methods
+  bool hasToken() {
+    return _getCookie(AppConstants.tokenKey) != null;
+  }
+
+  void _setCookie(String name, String value, {int? maxAgeInSeconds}) {
+    final maxAge = maxAgeInSeconds ?? (7 * 24 * 60 * 60); // Default 7 days
+    html.document.cookie =
+        '$name=$value; '
+        'path=/; '
+        'max-age=$maxAge; '
+        'secure; '
+        'samesite=strict';
+  }
+
+  void _removeCookie(String name) {
+    html.document.cookie =
+        '$name=; '
+        'path=/; '
+        'expires=Thu, 01 Jan 1970 00:00:00 GMT; '
+        'secure; '
+        'samesite=strict';
+  }
+
+  String? _getCookie(String name) {
+    final cookies = html.document.cookie?.split(';') ?? [];
+    for (final cookie in cookies) {
+      final parts = cookie.trim().split('=');
+      if (parts.length == 2 && parts[0] == name) {
+        return parts[1];
+      }
+    }
+    return null;
   }
 }

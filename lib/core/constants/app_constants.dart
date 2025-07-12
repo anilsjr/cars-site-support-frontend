@@ -1,10 +1,11 @@
 class AppConstants {
   // API Configuration
+  // Base URL for API requests
   static const String baseUrl = 'http://localhost:3000/';
   static const int connectionTimeout = 30000;
   static const int receiveTimeout = 30000;
 
-  // Storage Keys
+  // Storage Keys 
   static const String tokenKey = 'auth_token';
   static const String userKey = 'user_data';
   static const String themeKey = 'theme_mode';
