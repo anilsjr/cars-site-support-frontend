@@ -17,27 +17,20 @@ class UserRepositoryImpl implements UserRepository {
   Future<User?> getCurrentUser() async {
     try {
       // First check local storage
-      final userData = storageService.getUserData();
+      final userData = await storageService.getUserData();
       if (userData != null) {
         return UserModel.fromJson(userData);
       }
 
       // If not in local storage, try to get from API
       final token = storageService.getToken();
-      if (token != null) {
-        final user = await remoteDataSource.getCurrentUser();
-        await storageService.saveUserData(user.toJson());
-        return user;
-      }
-
-      return null;
+      final user = await remoteDataSource.getCurrentUser();
+      await storageService.saveUserData(user.toJson());
+      return user;
     } catch (e) {
       // If API fails, return cached data if available
-      final userData = storageService.getUserData();
-      if (userData != null) {
-        return UserModel.fromJson(userData);
-      }
-      return null;
+      final userData = await storageService.getUserData();
+      return UserModel.fromJson(userData!);
     }
   }
 
@@ -75,9 +68,13 @@ class UserRepositoryImpl implements UserRepository {
     try {
       final userModel = UserModel(
         id: user.id,
+        userId: user.userId,
         email: user.email,
-        name: user.name,
-        phoneNumber: user.phoneNumber,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        mobileNo: user.mobileNo,
+        isActive: user.isActive,
+        isLocked: user.isLocked,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
       );
