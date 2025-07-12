@@ -6,8 +6,8 @@ import 'package:dio/dio.dart';
 
 class LoginController extends GetxController {
   final formKey = GlobalKey<FormState>();
-  final userIdController = TextEditingController();
-  final passwordController = TextEditingController();
+  final userIdController = TextEditingController(text: "ANIL05101");
+  final passwordController = TextEditingController(text: "data@1234");
 
   final RxBool isPasswordVisible = false.obs;
   final RxBool isLoading = false.obs;

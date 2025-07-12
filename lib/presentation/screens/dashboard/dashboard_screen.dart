@@ -31,7 +31,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   bool _isSmallScreen(BuildContext context) {
-    return MediaQuery.of(context).size.width < 1024;
+    //testing
+    return MediaQuery.of(context).size.width < 1500;
   }
 
   PreferredSizeWidget _buildAppBar() {
@@ -49,30 +50,29 @@ class _DashboardScreenState extends State<DashboardScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           // Logo
-          if (!_isSmallScreen(context))
-            Image.asset(
-              'assets/images/logo.png',
-              height: 40,
-              errorBuilder: (context, error, stackTrace) {
-                return Container(
-                  height: 40,
-                  width: 120,
-                  decoration: BoxDecoration(
-                    color: Colors.blue.shade600,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Center(
-                    child: Text(
-                      'LOGO',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
+          Image.asset(
+            'assets/images/logo.png',
+            height: 40,
+            errorBuilder: (context, error, stackTrace) {
+              return Container(
+                height: 40,
+                width: 120,
+                decoration: BoxDecoration(
+                  color: Colors.blue.shade600,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Center(
+                  child: Text(
+                    'LOGO',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
-                );
-              },
-            ),
+                ),
+              );
+            },
+          ),
           // User Profile
           Row(
             mainAxisSize: MainAxisSize.min,
@@ -85,7 +85,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 onBackgroundImageError: (exception, stackTrace) {
                   // Handle image load error
                 },
-                child: const Icon(Icons.person, color: Colors.white),
               ),
               const SizedBox(width: 12),
               Column(
