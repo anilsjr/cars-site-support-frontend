@@ -24,7 +24,7 @@ class AuthService extends GetxService {
   Future<bool> checkAuthStatus() async {
     try {
       if (_storageService == null) return false;
-      
+
       final token = await _storageService!.getToken();
       final userData = await _storageService!.getUserData();
 
@@ -50,7 +50,7 @@ class AuthService extends GetxService {
     Map<String, dynamic> userData,
   ) async {
     if (_storageService == null) return;
-    
+
     await _storageService!.saveToken(token);
     await _storageService!.saveUserData(userData);
     _isAuthenticated.value = true;
@@ -60,7 +60,7 @@ class AuthService extends GetxService {
   /// Clear authentication state during logout
   Future<void> clearAuthentication() async {
     if (_storageService == null) return;
-    
+
     await _storageService!.removeToken();
     await _storageService!.removeUserData();
     _isAuthenticated.value = false;

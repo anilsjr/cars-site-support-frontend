@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../service_leads/service_leads_page.dart';
 
 class DashboardContent extends StatelessWidget {
   const DashboardContent({super.key});
@@ -21,14 +22,7 @@ class ServiceLeadsContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(
-        child: Text(
-          'Welcome to Service Leads Page',
-          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-        ),
-      ),
-    );
+    return const ServiceLeadsPage();
   }
 }
 
