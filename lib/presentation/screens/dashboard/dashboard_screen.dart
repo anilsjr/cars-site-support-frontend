@@ -3,8 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:get/get.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/services/theme_service.dart';
-import '../../../core/services/network_service.dart';
-import '../../../core/services/storage_service.dart';
+import '../../../domain/usecases/auth_usecases.dart';
 
 class DashboardScreen extends StatefulWidget {
   final Widget child;
@@ -87,58 +86,65 @@ class _DashboardScreenState extends State<DashboardScreen> {
               GestureDetector(
                 onTap: () async {
                   final selected = await showMenu<String>(
-                  context: context,
-                  position: RelativeRect.fromLTRB(1000, 70, 16, 0),
-                  items: [
-                    PopupMenuItem(
-                    value: 'profile',
-                    child: Row(
-                      children: [
-                      Icon(Icons.person, color: theme.colorScheme.onSurface),
-                      const SizedBox(width: 8),
-                      const Text('Profile'),
-                      ],
-                    ),
-                    ),
-                    PopupMenuItem(
-                    value: 'logout',
-                    child: Row(
-                      children: [
-                      Icon(Icons.logout, color: theme.colorScheme.onSurface),
-                      const SizedBox(width: 8),
-                      const Text('Logout'),
-                      ],
-                    ),
-                    ),
-                  ],
+                    context: context,
+                    position: RelativeRect.fromLTRB(1000, 70, 16, 0),
+                    items: [
+                      PopupMenuItem(
+                        value: 'profile',
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.person,
+                              color: theme.colorScheme.onSurface,
+                            ),
+                            const SizedBox(width: 8),
+                            const Text('Profile'),
+                          ],
+                        ),
+                      ),
+                      PopupMenuItem(
+                        value: 'logout',
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.logout,
+                              color: theme.colorScheme.onSurface,
+                            ),
+                            const SizedBox(width: 8),
+                            const Text('Logout'),
+                          ],
+                        ),
+                      ),
+                    ],
                   );
                   if (selected == 'logout') {
-                  // Replace with your token retrieval logic
-                  final token = await _getToken();
-                  await _logout(token);
-                  // Navigate to login or splash screen
-                  context.go('/login');
-
+                    await _logout();
+                    // Navigate to login screen
+                    context.go('/login');
                   }
                   // 'profile' does nothing
                 },
                 child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text(
-                    'John Doe',
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    'SEC102345',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: theme.colorScheme.onSurface.withOpacity(0.6),
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      'John Doe',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 4),
+                    Text(
+                      'SEC102345',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: theme.colorScheme.onSurface.withOpacity(0.6),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
@@ -314,5 +320,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
       ),
     );
+  }
+
+  // Logout function
+  Future<void> _logout() async {
+    try {
+      final logoutUseCase = Get.find<LogoutUseCase>();
+      await logoutUseCase.execute();
+    } catch (e) {
+      debugPrint('Logout failed: $e');
+      // Show error message to user if needed
+      Get.snackbar(
+        'Error',
+        'Failed to logout. Please try again.',
+        snackPosition: SnackPosition.TOP,
+      );
+    }
   }
 }

@@ -3,6 +3,7 @@ import '../../data/datasources/user_remote_datasource.dart';
 import '../../data/repositories/user_repository_impl.dart';
 import '../../domain/repositories/user_repository.dart';
 import '../../domain/usecases/auth_usecases.dart';
+import 'auth_service.dart';
 import 'network_service.dart';
 import 'storage_service.dart';
 import 'theme_service.dart';
@@ -13,6 +14,7 @@ class DependencyInjection {
     Get.lazyPut(() => NetworkService(), fenix: true);
     Get.lazyPut(() => StorageService(), fenix: true);
     Get.lazyPut(() => ThemeService(), fenix: true);
+    Get.put(() => AuthService(), permanent: true); // Use Get.put for immediate initialization
 
     // Data Sources
     Get.lazyPut<UserRemoteDataSource>(

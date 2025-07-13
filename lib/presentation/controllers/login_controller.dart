@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import '../../domain/usecases/auth_usecases.dart';
+import '../../core/services/auth_service.dart';
 import '../../core/theme/app_theme.dart';
 import 'package:dio/dio.dart';
 
@@ -15,12 +16,14 @@ class LoginController extends GetxController {
 
   // Use cases - injected via dependency injection
   late final LoginUseCase _loginUseCase;
+  late final AuthService _authService;
 
   @override
   void onInit() {
     super.onInit();
     // Get use cases from dependency injection
     _loginUseCase = Get.find<LoginUseCase>();
+    _authService = Get.find<AuthService>();
   }
 
   @override
@@ -70,6 +73,12 @@ class LoginController extends GetxController {
         passwordController.text,
       );
       print('Login successful, user: ${user.firstName}');
+
+      // Update authentication state in AuthService
+      await _authService.setAuthenticated(
+        user.accessToken ?? '', 
+        user.toJson(),
+      );
 
       // Clear loading state immediately after login success
       isLoading.value = false;

@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import '../../core/services/network_service.dart';
+import '../../core/services/storage_service.dart';
 import '../models/user_model.dart';
 
 abstract class UserRemoteDataSource {
@@ -80,7 +81,7 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
   @override
   Future<void> logout() async {
     try {
-      final response = await networkService.post('/auth/logout');
+      final response = await networkService.post('/api/auth/logout');
 
       if (response.statusCode != 200) {
         throw Exception('Logout failed: ${response.statusMessage}');
@@ -89,6 +90,11 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
       throw Exception('Network error: ${e.message}');
     } catch (e) {
       throw Exception('Unexpected error: $e');
+    } finally {
+      // Always clear local storage regardless of API response
+      final storageService = StorageService();
+      await storageService.removeToken();
+      await storageService.removeUserData();
     }
   }
 

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:get/get.dart';
 import '../core/theme/app_theme.dart';
+import '../core/services/auth_service.dart';
 import '../presentation/screens/login/login_screen.dart';
 import '../presentation/screens/dashboard/dashboard_screen.dart';
 import '../presentation/screens/dashboard/dashboard_content_pages.dart';
@@ -8,6 +10,35 @@ import '../presentation/screens/dashboard/dashboard_content_pages.dart';
 class AppRouter {
   static final GoRouter _router = GoRouter(
     initialLocation: '/login',
+    redirect: (context, state) async {
+      final authService = Get.find<AuthService>();
+      final isAuthenticated = await authService.checkAuthStatus();
+      
+      // List of protected routes that require authentication
+      final protectedRoutes = [
+        '/dashboard',
+        '/service-leads',
+        '/service-ticket',
+        '/jobs-cards',
+        '/daily-tasks',
+        '/vehicles',
+      ];
+      
+      final isProtectedRoute = protectedRoutes.any((route) => 
+        state.matchedLocation.startsWith(route));
+      
+      // If trying to access protected route without authentication
+      if (isProtectedRoute && !isAuthenticated) {
+        return '/login';
+      }
+      
+      // If authenticated and trying to access login page, redirect to dashboard
+      if (isAuthenticated && state.matchedLocation == '/login') {
+        return '/dashboard';
+      }
+      
+      return null; // No redirect needed
+    },
     routes: [
       GoRoute(
         path: '/login',
