@@ -66,14 +66,14 @@ class LoginController extends GetxController {
     isLoading.value = true;
 
     try {
-      print('Starting login process...');
+      // Get navigation context early to avoid async gaps
+      final navContext = context ?? Get.context;
 
       // Use clean architecture - call login use case
       final user = await _loginUseCase.execute(
         userIdController.text,
         passwordController.text,
       );
-      print('Login successful, user: ${user.firstName}');
 
       // Update authentication state in AuthService
       await _authService.setAuthenticated(
@@ -84,10 +84,6 @@ class LoginController extends GetxController {
       // Clear loading state immediately after login success
       isLoading.value = false;
 
-      // Get navigation context
-      final navContext = context ?? Get.context;
-      print('Navigation context: $navContext, mounted: ${navContext?.mounted}');
-
       // Show success message before navigation using ScaffoldMessenger
       if (navContext != null && navContext.mounted) {
         ScaffoldMessenger.of(navContext).showSnackBar(
@@ -97,23 +93,11 @@ class LoginController extends GetxController {
             duration: const Duration(seconds: 2),
           ),
         );
-      }
 
-      // Navigate to dashboard on successful login using go_router
-
-      if (navContext != null) {
-        print('Current route: ${GoRouterState.of(navContext).uri.path}');
-
-        if (navContext.mounted) {
-          print('Attempting to navigate to /dashboard');
-          navContext.go('/dashboard');
-          print('Navigation command sent');
-        }
-      } else {
-        print('No valid context for navigation');
+        // Navigate to dashboard on successful login
+        navContext.go('/dashboard');
       }
     } on DioException catch (e) {
-      print('DioException caught: ${e.toString()}');
       isLoading.value = false;
       String errorMessage = 'Login failed';
 
@@ -141,7 +125,6 @@ class LoginController extends GetxController {
         );
       }
     } catch (e) {
-      print('General exception caught: ${e.toString()}');
       isLoading.value = false;
 
       // Show error message using ScaffoldMessenger if context is available

@@ -9,15 +9,21 @@ import 'storage_service.dart';
 import 'theme_service.dart';
 
 class DependencyInjection {
-  static void init() {
-    // Core Services
-    Get.lazyPut(() => NetworkService(), fenix: true);
-    Get.lazyPut(() => StorageService(), fenix: true);
-    Get.lazyPut(() => ThemeService(), fenix: true);
-    Get.put(
-      () => AuthService(),
-      permanent: true,
-    ); // Use Get.put for immediate initialization
+  static Future<void> init() async {
+    // Core Services - register instances first, but don't initialize ThemeService yet
+    Get.put(NetworkService(), permanent: true);
+    Get.put(StorageService(), permanent: true);
+
+    // Initialize storage service first
+    await Get.find<StorageService>().initialize();
+    Get.find<NetworkService>().initialize();
+
+    // Now register services that depend on storage being initialized
+    Get.put(ThemeService(), permanent: true);
+    final authService = Get.put(AuthService(), permanent: true);
+
+    // Wait for AuthService to initialize
+    await authService.onInit();
 
     // Data Sources
     Get.lazyPut<UserRemoteDataSource>(

@@ -2,7 +2,7 @@ import 'package:get/get.dart';
 import 'storage_service.dart';
 
 class AuthService extends GetxService {
-  final StorageService _storageService = StorageService();
+  late final StorageService _storageService;
 
   // Observable to track authentication state
   final RxBool _isAuthenticated = false.obs;
@@ -15,6 +15,7 @@ class AuthService extends GetxService {
   @override
   Future<void> onInit() async {
     super.onInit();
+    _storageService = Get.find<StorageService>();
     await checkAuthStatus();
   }
 

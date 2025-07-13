@@ -1,18 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'app_exports.dart';
-import 'core/services/storage_service.dart' as storage;
-import 'core/services/theme_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize services
-  await storage.StorageService().initialize();
-  NetworkService().initialize();
+  // Initialize dependency injection and services
+  await DependencyInjection.init();
 
-  // Initialize dependency injection
-  DependencyInjection.init();
+  // Wait a bit to ensure all services are properly initialized
+  await Future.delayed(const Duration(milliseconds: 100));
 
   runApp(const MyApp());
 }
