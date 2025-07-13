@@ -1,6 +1,5 @@
 import 'package:dio/dio.dart';
 import '../../core/services/network_service.dart';
-import '../../core/services/storage_service.dart';
 import '../models/user_model.dart';
 
 abstract class UserRemoteDataSource {
@@ -90,12 +89,8 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
       throw Exception('Network error: ${e.message}');
     } catch (e) {
       throw Exception('Unexpected error: $e');
-    } finally {
-      // Always clear local storage regardless of API response
-      final storageService = StorageService();
-      await storageService.removeToken();
-      await storageService.removeUserData();
     }
+    // Note: Local storage cleanup is handled by AuthService in the presentation layer
   }
 
   @override

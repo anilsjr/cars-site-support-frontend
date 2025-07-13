@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import '../../domain/usecases/auth_usecases.dart';
 import '../../core/services/auth_service.dart';
+import '../../data/models/user_model.dart';
 import '../../core/theme/app_theme.dart';
 import 'package:dio/dio.dart';
 
@@ -76,8 +77,8 @@ class LoginController extends GetxController {
 
       // Update authentication state in AuthService
       await _authService.setAuthenticated(
-        user.accessToken ?? '', 
-        user.toJson(),
+        user.accessToken ?? '',
+        (user as UserModel).toJson(),
       );
 
       // Clear loading state immediately after login success

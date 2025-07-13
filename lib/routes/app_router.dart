@@ -13,7 +13,7 @@ class AppRouter {
     redirect: (context, state) async {
       final authService = Get.find<AuthService>();
       final isAuthenticated = await authService.checkAuthStatus();
-      
+
       // List of protected routes that require authentication
       final protectedRoutes = [
         '/dashboard',
@@ -23,20 +23,21 @@ class AppRouter {
         '/daily-tasks',
         '/vehicles',
       ];
-      
-      final isProtectedRoute = protectedRoutes.any((route) => 
-        state.matchedLocation.startsWith(route));
-      
+
+      final isProtectedRoute = protectedRoutes.any(
+        (route) => state.matchedLocation.startsWith(route),
+      );
+
       // If trying to access protected route without authentication
       if (isProtectedRoute && !isAuthenticated) {
         return '/login';
       }
-      
+
       // If authenticated and trying to access login page, redirect to dashboard
       if (isAuthenticated && state.matchedLocation == '/login') {
         return '/dashboard';
       }
-      
+
       return null; // No redirect needed
     },
     routes: [

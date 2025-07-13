@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:get/get.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/services/theme_service.dart';
+import '../../../core/services/auth_service.dart';
 import '../../../domain/usecases/auth_usecases.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -326,7 +327,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Future<void> _logout() async {
     try {
       final logoutUseCase = Get.find<LogoutUseCase>();
+      final authService = Get.find<AuthService>();
+
       await logoutUseCase.execute();
+      await authService.clearAuthentication();
+
+      // Navigate to login page
+      if (mounted) {
+        context.go('/login');
+      }
     } catch (e) {
       debugPrint('Logout failed: $e');
       // Show error message to user if needed

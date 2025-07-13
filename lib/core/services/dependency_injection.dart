@@ -14,7 +14,10 @@ class DependencyInjection {
     Get.lazyPut(() => NetworkService(), fenix: true);
     Get.lazyPut(() => StorageService(), fenix: true);
     Get.lazyPut(() => ThemeService(), fenix: true);
-    Get.put(() => AuthService(), permanent: true); // Use Get.put for immediate initialization
+    Get.put(
+      () => AuthService(),
+      permanent: true,
+    ); // Use Get.put for immediate initialization
 
     // Data Sources
     Get.lazyPut<UserRemoteDataSource>(

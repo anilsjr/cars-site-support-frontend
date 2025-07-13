@@ -4,6 +4,7 @@ export 'core/theme/app_theme.dart';
 export 'core/utils/validators.dart';
 export 'core/services/network_service.dart';
 export 'core/services/storage_service.dart';
+export 'core/services/auth_service.dart';
 export 'core/services/dependency_injection.dart';
 export 'core/services/theme_service.dart';
 
