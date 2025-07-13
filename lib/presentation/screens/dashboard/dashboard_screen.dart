@@ -120,8 +120,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   );
                   if (selected == 'logout') {
                     await _logout();
-                    // Navigate to login screen
-                    context.go('/login');
                   }
                   // 'profile' does nothing
                 },

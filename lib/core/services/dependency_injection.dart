@@ -20,10 +20,7 @@ class DependencyInjection {
 
     // Now register services that depend on storage being initialized
     Get.put(ThemeService(), permanent: true);
-    final authService = Get.put(AuthService(), permanent: true);
-
-    // Wait for AuthService to initialize
-    await authService.onInit();
+    Get.put(AuthService(), permanent: true);
 
     // Data Sources
     Get.lazyPut<UserRemoteDataSource>(

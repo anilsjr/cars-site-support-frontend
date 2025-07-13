@@ -2,7 +2,7 @@ import 'package:get/get.dart';
 import 'storage_service.dart';
 
 class AuthService extends GetxService {
-  late final StorageService _storageService;
+  StorageService? _storageService;
 
   // Observable to track authentication state
   final RxBool _isAuthenticated = false.obs;
@@ -15,15 +15,18 @@ class AuthService extends GetxService {
   @override
   Future<void> onInit() async {
     super.onInit();
-    _storageService = Get.find<StorageService>();
+    // Only initialize if not already initialized
+    _storageService ??= Get.find<StorageService>();
     await checkAuthStatus();
   }
 
   /// Check if user is authenticated by verifying token and user data
   Future<bool> checkAuthStatus() async {
     try {
-      final token = await _storageService.getToken();
-      final userData = await _storageService.getUserData();
+      if (_storageService == null) return false;
+      
+      final token = await _storageService!.getToken();
+      final userData = await _storageService!.getUserData();
 
       if (token != null && token.isNotEmpty && userData != null) {
         _isAuthenticated.value = true;
@@ -46,22 +49,27 @@ class AuthService extends GetxService {
     String token,
     Map<String, dynamic> userData,
   ) async {
-    await _storageService.saveToken(token);
-    await _storageService.saveUserData(userData);
+    if (_storageService == null) return;
+    
+    await _storageService!.saveToken(token);
+    await _storageService!.saveUserData(userData);
     _isAuthenticated.value = true;
     _userData.value = userData;
   }
 
   /// Clear authentication state during logout
   Future<void> clearAuthentication() async {
-    await _storageService.removeToken();
-    await _storageService.removeUserData();
+    if (_storageService == null) return;
+    
+    await _storageService!.removeToken();
+    await _storageService!.removeUserData();
     _isAuthenticated.value = false;
     _userData.value = null;
   }
 
   /// Get current auth token
   Future<String?> getToken() async {
-    return await _storageService.getToken();
+    if (_storageService == null) return null;
+    return await _storageService!.getToken();
   }
 }
