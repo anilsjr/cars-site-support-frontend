@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import '../../domain/usecases/auth_usecases.dart';
+import '../../core/theme/app_theme.dart';
 import 'package:dio/dio.dart';
 
 class LoginController extends GetxController {
@@ -82,7 +83,7 @@ class LoginController extends GetxController {
         ScaffoldMessenger.of(navContext).showSnackBar(
           SnackBar(
             content: Text('Login successful! Welcome, ${user.firstName}'),
-            backgroundColor: Colors.green,
+            backgroundColor: AppTheme.successColor,
             duration: const Duration(seconds: 2),
           ),
         );
@@ -124,7 +125,7 @@ class LoginController extends GetxController {
         ScaffoldMessenger.of(errorContext).showSnackBar(
           SnackBar(
             content: Text(errorMessage),
-            backgroundColor: Colors.red,
+            backgroundColor: AppTheme.errorColor,
             duration: const Duration(seconds: 3),
           ),
         );
@@ -139,7 +140,7 @@ class LoginController extends GetxController {
         ScaffoldMessenger.of(errorContext).showSnackBar(
           SnackBar(
             content: Text('Login failed: ${e.toString()}'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppTheme.errorColor,
             duration: const Duration(seconds: 3),
           ),
         );

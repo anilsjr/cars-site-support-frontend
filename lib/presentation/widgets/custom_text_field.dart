@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/theme/app_theme.dart';
 
 class CustomTextField extends StatelessWidget {
   final String label;
@@ -30,6 +31,7 @@ class CustomTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return TextFormField(
       controller: controller,
       validator: validator,
@@ -45,13 +47,13 @@ class CustomTextField extends StatelessWidget {
         suffixIcon: suffixIcon,
         border: const OutlineInputBorder(),
         enabledBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: Colors.grey.shade400),
+          borderSide: BorderSide(color: theme.colorScheme.outline),
         ),
         focusedBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: Theme.of(context).primaryColor),
+          borderSide: BorderSide(color: AppTheme.primaryMedium),
         ),
-        errorBorder: const OutlineInputBorder(
-          borderSide: BorderSide(color: Colors.red),
+        errorBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: AppTheme.errorColor),
         ),
       ),
     );

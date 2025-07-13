@@ -5,12 +5,14 @@ import '../../domain/repositories/user_repository.dart';
 import '../../domain/usecases/auth_usecases.dart';
 import 'network_service.dart';
 import 'storage_service.dart';
+import 'theme_service.dart';
 
 class DependencyInjection {
   static void init() {
     // Core Services
     Get.lazyPut(() => NetworkService(), fenix: true);
     Get.lazyPut(() => StorageService(), fenix: true);
+    Get.lazyPut(() => ThemeService(), fenix: true);
 
     // Data Sources
     Get.lazyPut<UserRemoteDataSource>(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/theme/app_theme.dart';
 
 class LoadingWidget extends StatelessWidget {
   final String? message;
@@ -45,15 +46,23 @@ class EmptyWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon ?? Icons.inbox, size: 64, color: Colors.grey),
+          Icon(
+            icon ?? Icons.inbox,
+            size: 64,
+            color: theme.colorScheme.onSurface.withOpacity(0.5),
+          ),
           const SizedBox(height: 16),
           Text(
             message,
-            style: const TextStyle(fontSize: 16, color: Colors.grey),
+            style: TextStyle(
+              fontSize: 16,
+              color: theme.colorScheme.onSurface.withOpacity(0.5),
+            ),
             textAlign: TextAlign.center,
           ),
           if (onRetry != null) ...[
@@ -87,11 +96,11 @@ class ErrorWidget extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.error_outline, size: 64, color: Colors.red),
+          Icon(Icons.error_outline, size: 64, color: AppTheme.errorColor),
           const SizedBox(height: 16),
           Text(
             message,
-            style: const TextStyle(fontSize: 16, color: Colors.red),
+            style: TextStyle(fontSize: 16, color: AppTheme.errorColor),
             textAlign: TextAlign.center,
           ),
           if (onRetry != null) ...[

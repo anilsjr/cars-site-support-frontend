@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:get/get.dart';
+import '../../../core/theme/app_theme.dart';
+import '../../../core/services/theme_service.dart';
+import '../../../core/services/network_service.dart';
+import '../../../core/services/storage_service.dart';
 
 class DashboardScreen extends StatefulWidget {
   final Widget child;
@@ -36,12 +41,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   PreferredSizeWidget _buildAppBar() {
+    final theme = Theme.of(context);
     return AppBar(
-      backgroundColor: Colors.white,
+      backgroundColor: theme.colorScheme.surface,
       elevation: 1,
       leading: _isSmallScreen(context)
           ? IconButton(
-              icon: const Icon(Icons.menu, color: Colors.black87),
+              icon: Icon(Icons.menu, color: theme.colorScheme.onSurface),
               onPressed: () => _scaffoldKey.currentState?.openDrawer(),
             )
           : null,
@@ -58,17 +64,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 height: 40,
                 width: 120,
                 decoration: BoxDecoration(
-                  color: Colors.blue.shade600,
+                  color: AppTheme.primaryMedium,
                   borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Center(
-                  child: Text(
-                    'LOGO',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
                 ),
               );
             },
@@ -87,29 +84,59 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 },
               ),
               const SizedBox(width: 12),
-              Column(
+              GestureDetector(
+                onTap: () async {
+                  final selected = await showMenu<String>(
+                  context: context,
+                  position: RelativeRect.fromLTRB(1000, 70, 16, 0),
+                  items: [
+                    PopupMenuItem(
+                    value: 'profile',
+                    child: Row(
+                      children: [
+                      Icon(Icons.person, color: theme.colorScheme.onSurface),
+                      const SizedBox(width: 8),
+                      const Text('Profile'),
+                      ],
+                    ),
+                    ),
+                    PopupMenuItem(
+                    value: 'logout',
+                    child: Row(
+                      children: [
+                      Icon(Icons.logout, color: theme.colorScheme.onSurface),
+                      const SizedBox(width: 8),
+                      const Text('Logout'),
+                      ],
+                    ),
+                    ),
+                  ],
+                  );
+                  if (selected == 'logout') {
+                  // Replace with your token retrieval logic
+                  final token = await _getToken();
+                  await _logout(token);
+                  // Navigate to login or splash screen
+                  context.go('/login');
+
+                  }
+                  // 'profile' does nothing
+                },
+                child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Row(
-                    children: [
-                      const Text(
-                        'John Doe',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.black87,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'SEC102345',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey.shade600,
-                        ),
-                      ),
-                    ],
+                  const Text(
+                    'John Doe',
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'SEC102345',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: theme.colorScheme.onSurface.withOpacity(0.6),
+                    ),
                   ),
                 ],
               ),
@@ -121,11 +148,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildSidebar() {
+    final theme = Theme.of(context);
     return Container(
       width: 280,
       decoration: BoxDecoration(
-        color: Colors.grey.shade50,
-        border: Border(right: BorderSide(color: Colors.grey.shade300)),
+        color: theme.colorScheme.surface,
+        border: Border(right: BorderSide(color: theme.dividerColor)),
       ),
       child: _buildNavigationItems(),
     );
@@ -194,6 +222,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ],
           ),
         ),
+        // Theme switch at the bottom
+        _buildThemeSwitch(),
       ],
     );
   }
@@ -204,22 +234,27 @@ class _DashboardScreenState extends State<DashboardScreen> {
     required String route,
     required bool isSelected,
   }) {
+    final theme = Theme.of(context);
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       child: ListTile(
         leading: Icon(
           icon,
-          color: isSelected ? Colors.blue.shade600 : Colors.grey.shade600,
+          color: isSelected
+              ? AppTheme.primaryMedium
+              : theme.colorScheme.onSurface.withOpacity(0.6),
         ),
         title: Text(
           title,
           style: TextStyle(
-            color: isSelected ? Colors.blue.shade600 : Colors.grey.shade800,
+            color: isSelected
+                ? AppTheme.primaryMedium
+                : theme.colorScheme.onSurface,
             fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
           ),
         ),
         selected: isSelected,
-        selectedTileColor: Colors.blue.shade50,
+        selectedTileColor: AppTheme.primaryVeryLight,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         onTap: () {
           context.go(route);
@@ -228,6 +263,55 @@ class _DashboardScreenState extends State<DashboardScreen> {
             Navigator.of(context).pop();
           }
         },
+      ),
+    );
+  }
+
+  Widget _buildThemeSwitch() {
+    final theme = Theme.of(context);
+    final themeService = Get.find<ThemeService>();
+
+    return Container(
+      margin: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.3),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: theme.dividerColor.withOpacity(0.5)),
+      ),
+      child: Obx(
+        () => Row(
+          children: [
+            Icon(
+              themeService.isDarkMode ? Icons.dark_mode : Icons.light_mode,
+              color: AppTheme.primaryMedium,
+              size: 20,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'Dark Mode',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: theme.colorScheme.onSurface,
+                ),
+              ),
+            ),
+            Switch(
+              value: themeService.isDarkMode,
+              onChanged: (value) {
+                themeService.changeTheme(
+                  value ? ThemeMode.dark : ThemeMode.light,
+                );
+              },
+              activeColor: AppTheme.primaryMedium,
+              activeTrackColor: AppTheme.primaryLight.withOpacity(0.5),
+              inactiveThumbColor: theme.colorScheme.outline,
+              inactiveTrackColor: theme.colorScheme.surfaceContainerHighest,
+            ),
+          ],
+        ),
       ),
     );
   }

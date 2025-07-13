@@ -5,6 +5,7 @@ export 'core/utils/validators.dart';
 export 'core/services/network_service.dart';
 export 'core/services/storage_service.dart';
 export 'core/services/dependency_injection.dart';
+export 'core/services/theme_service.dart';
 
 // Domain exports
 export 'domain/entities/user.dart';
