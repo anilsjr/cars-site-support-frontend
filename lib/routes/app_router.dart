@@ -64,7 +64,7 @@ class AppRouter {
           GoRoute(
             path: '/service-leads',
             name: 'service-leads',
-            builder: (context, state) => const ServiceLeadsContent(),
+            builder: (context, state) => const SizedBox(),
           ),
           GoRoute(
             path: '/service-ticket',

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../service_leads/service_leads_page.dart';
 
 class DashboardContent extends StatelessWidget {
   const DashboardContent({super.key});
@@ -17,14 +16,7 @@ class DashboardContent extends StatelessWidget {
   }
 }
 
-class ServiceLeadsContent extends StatelessWidget {
-  const ServiceLeadsContent({super.key});
 
-  @override
-  Widget build(BuildContext context) {
-    return const ServiceLeadsPage();
-  }
-}
 
 class ServiceTicketContent extends StatelessWidget {
   const ServiceTicketContent({super.key});

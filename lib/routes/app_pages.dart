@@ -1,8 +1,6 @@
 import 'package:get/get.dart';
 import '../presentation/screens/login/login_screen.dart';
-import '../presentation/screens/service_leads/service_leads_page.dart';
 import '../presentation/bindings/login_binding.dart';
-import '../presentation/bindings/service_leads_binding.dart';
 
 class AppPages {
   static const initial = '/login';
@@ -15,8 +13,9 @@ class AppPages {
     ),
     GetPage(
       name: '/service-leads',
-      page: () => const ServiceLeadsPage(),
-      binding: ServiceLeadsBinding(),
+      page: () => const LoginScreen(),
+      // to be updated with actual service leads page
+      binding: LoginBinding(),
     ),
   ];
 }
