@@ -23,12 +23,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Scaffold(
       key: _scaffoldKey,
       appBar: _buildAppBar(),
-      drawer: _isSmallScreen(context) ? _buildDrawer() : null,
+      drawer: _isSmallScreen(context) ? buildDrawer() : null,
       body: _isSmallScreen(context)
           ? widget.child
           : Row(
               children: [
-                _buildSidebar(),
+                buildSidebar(),
                 Expanded(child: widget.child),
               ],
             ),
@@ -71,59 +71,52 @@ class _DashboardScreenState extends State<DashboardScreen> {
             },
           ),
           // User Profile
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              CircleAvatar(
-                radius: 20,
-                backgroundImage: const AssetImage(
-                  'assets/images/profile-img.png',
+          GestureDetector(
+            onTap: () async {
+              final selected = await showMenu<String>(
+                context: context,
+                position: RelativeRect.fromLTRB(1000, 70, 16, 0),
+                items: [
+                  PopupMenuItem(
+                    value: 'profile',
+                    child: Row(
+                      children: [
+                        Icon(Icons.person, color: theme.colorScheme.onSurface),
+                        const SizedBox(width: 8),
+                        const Text('Profile'),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: 'logout',
+                    child: Row(
+                      children: [
+                        Icon(Icons.logout, color: theme.colorScheme.onSurface),
+                        const SizedBox(width: 8),
+                        const Text('Logout'),
+                      ],
+                    ),
+                  ),
+                ],
+              );
+              if (selected == 'logout') {
+                await logout();
+              }
+            },
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircleAvatar(
+                  radius: 20,
+                  backgroundImage: const AssetImage(
+                    'assets/images/profile-img.png',
+                  ),
+                  onBackgroundImageError: (exception, stackTrace) {
+                    // Handle image load error
+                  },
                 ),
-                onBackgroundImageError: (exception, stackTrace) {
-                  // Handle image load error
-                },
-              ),
-              const SizedBox(width: 12),
-              GestureDetector(
-                onTap: () async {
-                  final selected = await showMenu<String>(
-                    context: context,
-                    position: RelativeRect.fromLTRB(1000, 70, 16, 0),
-                    items: [
-                      PopupMenuItem(
-                        value: 'profile',
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.person,
-                              color: theme.colorScheme.onSurface,
-                            ),
-                            const SizedBox(width: 8),
-                            const Text('Profile'),
-                          ],
-                        ),
-                      ),
-                      PopupMenuItem(
-                        value: 'logout',
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.logout,
-                              color: theme.colorScheme.onSurface,
-                            ),
-                            const SizedBox(width: 8),
-                            const Text('Logout'),
-                          ],
-                        ),
-                      ),
-                    ],
-                  );
-                  if (selected == 'logout') {
-                    await _logout();
-                  }
-                  // 'profile' does nothing
-                },
-                child: Column(
+                const SizedBox(width: 12),
+                Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -144,15 +137,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                   ],
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildSidebar() {
+  Widget buildSidebar() {
     final theme = Theme.of(context);
     return Container(
       width: 280,
@@ -160,11 +153,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
         color: theme.colorScheme.surface,
         border: Border(right: BorderSide(color: theme.dividerColor)),
       ),
-      child: _buildNavigationItems(),
+      child: buildNavigationItems(),
     );
   }
 
-  Widget _buildDrawer() {
+  Widget buildDrawer() {
     return Drawer(
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.only(
@@ -174,11 +167,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
           bottomRight: Radius.circular(0),
         ),
       ),
-      child: _buildNavigationItems(),
+      child: buildNavigationItems(),
     );
   }
 
-  Widget _buildNavigationItems() {
+  Widget buildNavigationItems() {
     final currentLocation = GoRouterState.of(context).uri.path;
 
     return Column(
@@ -188,37 +181,37 @@ class _DashboardScreenState extends State<DashboardScreen> {
           child: ListView(
             padding: const EdgeInsets.symmetric(vertical: 8),
             children: [
-              _buildNavigationItem(
+              buildNavigationItem(
                 icon: Icons.dashboard,
                 title: 'Dashboard',
                 route: '/dashboard',
                 isSelected: currentLocation == '/dashboard',
               ),
-              _buildNavigationItem(
+              buildNavigationItem(
                 icon: Icons.assignment,
                 title: 'Service Leads',
                 route: '/service-leads',
                 isSelected: currentLocation == '/service-leads',
               ),
-              _buildNavigationItem(
+              buildNavigationItem(
                 icon: Icons.support_agent,
                 title: 'Service Ticket',
                 route: '/service-ticket',
                 isSelected: currentLocation == '/service-ticket',
               ),
-              _buildNavigationItem(
+              buildNavigationItem(
                 icon: Icons.work,
                 title: 'Jobs Cards',
                 route: '/jobs-cards',
                 isSelected: currentLocation == '/jobs-cards',
               ),
-              _buildNavigationItem(
+              buildNavigationItem(
                 icon: Icons.task_alt,
                 title: 'Daily Tasks',
                 route: '/daily-tasks',
                 isSelected: currentLocation == '/daily-tasks',
               ),
-              _buildNavigationItem(
+              buildNavigationItem(
                 icon: Icons.directions_car,
                 title: 'Vehicles',
                 route: '/vehicles',
@@ -228,12 +221,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         ),
         // Theme switch at the bottom
-        _buildThemeSwitch(),
+        buildThemeSwitch(),
       ],
     );
   }
 
-  Widget _buildNavigationItem({
+  Widget buildNavigationItem({
     required IconData icon,
     required String title,
     required String route,
@@ -272,7 +265,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildThemeSwitch() {
+  Widget buildThemeSwitch() {
     final theme = Theme.of(context);
     final themeService = Get.find<ThemeService>();
 
@@ -322,7 +315,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   // Logout function
-  Future<void> _logout() async {
+  Future<void> logout() async {
     try {
       final logoutUseCase = Get.find<LogoutUseCase>();
       final authService = Get.find<AuthService>();

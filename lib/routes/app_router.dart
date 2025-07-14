@@ -6,6 +6,8 @@ import '../core/services/auth_service.dart';
 import '../presentation/screens/login/login_screen.dart';
 import '../presentation/screens/dashboard/dashboard_screen.dart';
 import '../presentation/screens/dashboard/dashboard_content_pages.dart';
+import '../presentation/screens/servicelead/servicelead_screen.dart';
+import '../presentation/bindings/servicelead_binding.dart';
 
 class AppRouter {
   static final GoRouter _router = GoRouter(
@@ -64,7 +66,11 @@ class AppRouter {
           GoRoute(
             path: '/service-leads',
             name: 'service-leads',
-            builder: (context, state) => const SizedBox(),
+            builder: (context, state) {
+              // Initialize service lead dependencies
+              ServiceLeadBinding().dependencies();
+              return const ServiceLeadScreen();
+            },
           ),
           GoRoute(
             path: '/service-ticket',

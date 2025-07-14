@@ -49,7 +49,9 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
       } else if (e.response?.statusCode == 422) {
         throw Exception('Invalid input data');
       } else {
-        throw Exception('Network error: ${e.message}');
+        throw Exception(
+          'Network error: its not you, its me , sorry for inconvenience',
+        );
       }
     } catch (e) {
       throw Exception('Unexpected error: $e');
