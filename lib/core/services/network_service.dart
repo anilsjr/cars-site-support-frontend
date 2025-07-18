@@ -43,7 +43,7 @@ class NetworkService {
           // Skip auth for login/register endpoints
           if (!options.path.contains('/login') &&
               !options.path.contains('/register')) {
-            final token = StorageService().getToken();
+            final token = StorageService.getCookie(AppConstants.tokenKey);
             options.headers['Authorization'] = 'Bearer $token';
           }
           handler.next(options);

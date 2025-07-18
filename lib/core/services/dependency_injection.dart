@@ -15,7 +15,6 @@ class DependencyInjection {
     Get.put(StorageService(), permanent: true);
 
     // Initialize storage service first
-    await Get.find<StorageService>().initialize();
     Get.find<NetworkService>().initialize();
 
     // Now register services that depend on storage being initialized

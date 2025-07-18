@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:vehicle_site_support_web/core/constants/app_constants.dart'
+    show AppConstants;
 import 'storage_service.dart';
 
 class ThemeService extends GetxController {
   static final ThemeService _instance = ThemeService._internal();
   factory ThemeService() => _instance;
   ThemeService._internal();
-
-  final StorageService _storageService = Get.find<StorageService>();
 
   final Rx<ThemeMode> _themeMode = ThemeMode.system.obs;
 
@@ -20,7 +20,7 @@ class ThemeService extends GetxController {
   }
 
   void _loadThemeMode() {
-    final savedTheme = _storageService.getThemeMode();
+    final savedTheme = StorageService.getLocalStorage(AppConstants.themeKey);
     if (savedTheme != null) {
       switch (savedTheme) {
         case 'light':
@@ -51,7 +51,7 @@ class ThemeService extends GetxController {
         break;
     }
 
-    await _storageService.saveThemeMode(themeModeString);
+    StorageService.setLocalStorage(AppConstants.themeKey, themeModeString);
   }
 
   bool get isDarkMode {

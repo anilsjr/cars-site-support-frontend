@@ -1,3 +1,8 @@
+import 'package:flutter/foundation.dart';
+import 'package:universal_html/html.dart';
+import 'package:vehicle_site_support_web/core/constants/app_constants.dart'
+    show AppConstants, appName;
+
 import '../../domain/entities/user.dart';
 import '../../domain/repositories/user_repository.dart';
 import '../../core/services/storage_service.dart';
@@ -16,36 +21,18 @@ class UserRepositoryImpl implements UserRepository {
   @override
   Future<User?> getCurrentUser() async {
     try {
+      if (!kIsWeb) return null;
+
       // First check local storage
-      final userData = await storageService.getUserData();
-      if (userData != null) {
-        // Check if we have a valid token
-        final token = await storageService.getToken();
-        if (token != null) {
-          return UserModel.fromJson(userData);
-        }
-      }
-
-      // If not in local storage or no token, try to get from API
-      final user = await remoteDataSource.getCurrentUser();
-      await storageService.saveUserData(user.toJson());
-
-      // Save the access token if available
-      if (user.accessToken != null) {
-        await storageService.saveToken(user.accessToken!);
-      }
-
-      return user;
+      return StorageService.getLocalStorage<User>(
+        AppConstants.userDataKey,
+        fromJson: (json) => UserModel.fromJson(json),
+      );
     } catch (e) {
-      // If API fails, return cached data if available and we have a token
-      final token = await storageService.getToken();
-      if (token != null) {
-        final userData = await storageService.getUserData();
-        if (userData != null) {
-          return UserModel.fromJson(userData);
-        }
+      if (kDebugMode) {
+        print('Error retrieving user: $e');
       }
-      return null;
+      throw Exception('Login failed');
     }
   }
 
@@ -54,17 +41,28 @@ class UserRepositoryImpl implements UserRepository {
     try {
       final user = await remoteDataSource.login(userIdOrEmail, password);
 
-      // Save user data and token to local storage
-      await storageService.saveUserData(user.toJson());
+      if (kIsWeb) {
+        if (user.accessToken != null) {
+          StorageService.setCookie('auth_token', user.accessToken!);
+        }
+        StorageService.setLocalStorage(AppConstants.isAuthenticatedKey, 'true');
 
-      // Save the access token
-      if (user.accessToken != null) {
-        await storageService.saveToken(user.accessToken!);
+        final userDataForStorage = user.toJson()..remove('token');
+        StorageService.setLocalStorage(
+          AppConstants.userDataKey,
+          userDataForStorage,
+        );
       }
-
       return user;
     } catch (e) {
-      rethrow;
+      if (kDebugMode) {
+        print('Login error in LoginService: $e');
+      }
+      // if (context != null) {
+      //   showToastification(context, e.message, type: ToastificationType.error);
+      // }
+
+      throw Exception('Login failed');
     }
   }
 
@@ -77,41 +75,41 @@ class UserRepositoryImpl implements UserRepository {
       // Continue with local logout even if API call fails
     } finally {
       // Clear local storage
-      await storageService.removeToken();
-      await storageService.removeUserData();
+      StorageService.setLocalStorage(AppConstants.isAuthenticatedKey, 'false');
+      StorageService.clearAuthStorage();
     }
   }
 
-  @override
-  Future<User> updateProfile(User user) async {
-    try {
-      final userModel = UserModel(
-        id: user.id,
-        userId: user.userId,
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        mobileNo: user.mobileNo,
-        isActive: user.isActive,
-        isLocked: user.isLocked,
-        createdAt: user.createdAt,
-        updatedAt: user.updatedAt,
-      );
+  // @override
+  // Future<User> updateProfile(User user) async {
+  //   try {
+  //     final userModel = UserModel(
+  //       id: user.id,
+  //       userId: user.userId,
+  //       email: user.email,
+  //       firstName: user.firstName,
+  //       lastName: user.lastName,
+  //       mobileNo: user.mobileNo,
+  //       isActive: user.isActive,
+  //       isLocked: user.isLocked,
+  //       createdAt: user.createdAt,
+  //       updatedAt: user.updatedAt,
+  //     );
 
-      final updatedUser = await remoteDataSource.updateProfile(userModel);
+  //     final updatedUser = await remoteDataSource.updateProfile(userModel);
 
-      // Update local storage
-      await storageService.saveUserData(updatedUser.toJson());
+  //     // Update local storage
+  //     await storageService.saveUserData(updatedUser.toJson());
 
-      return updatedUser;
-    } catch (e) {
-      rethrow;
-    }
-  }
+  //     return updatedUser;
+  //   } catch (e) {
+  //     rethrow;
+  //   }
+  // }
 
-  @override
-  Future<void> changePassword(String oldPassword, String newPassword) async {
-    // This would typically call a different endpoint
-    throw UnimplementedError('Change password not implemented yet');
-  }
+  // @override
+  // Future<void> changePassword(String oldPassword, String newPassword) async {
+  //   // This would typically call a different endpoint
+  //   throw UnimplementedError('Change password not implemented yet');
+  // }
 }

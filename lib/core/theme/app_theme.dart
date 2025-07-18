@@ -1,77 +1,98 @@
 import 'package:flutter/material.dart';
 
 class AppTheme {
-  // Custom color palette
-  static const List<Color> customColors = [
-    Color(0xFF03045e), // Dark navy
-    Color(0xFF023e8a), // Navy blue
-    Color(0xFF0077b6), // Blue
-    Color(0xFF0096c7), // Medium blue
-    Color(0xFF00b4d8), // Light blue
-    Color(0xFF48cae4), // Sky blue
-    Color(0xFF90e0ef), // Light sky blue
-    Color(0xFFade8f4), // Very light blue
-    Color(0xFFcaf0f8), // Pale blue
-  ];
+  // Modernized Color Palette with Same Names
+  static const Color primaryDark = Color(
+    0xFF1F2937,
+  ); // Very dark blue-gray (modern dark)
+  static const Color primaryMedium = Color(
+    0xFF4F46E5,
+  ); // Vibrant indigo (main primary)
+  static const Color primaryLight = Color(0xFF6366F1); // Light indigo (accent)
+  static const Color primaryVeryLight = Color(
+    0xFFF9FAFB,
+  ); // Light gray background
 
-  // Primary colors from the palette
-  static const Color primaryDark = Color(0xFF03045e);
-  static const Color primaryMedium = Color(0xFF0077b6);
-  static const Color primaryLight = Color(0xFF48cae4);
-  static const Color primaryVeryLight = Color(0xFFcaf0f8);
-
-  // Additional semantic colors
-  static const Color successColor = Color(0xFF00b4d8); // Light blue for success
-  static const Color errorColor = Color(0xFF03045e); // Dark navy for errors
-  static const Color warningColor = Color(
-    0xFF0096c7,
-  ); // Medium blue for warnings
-  static const Color infoColor = Color(0xFF48cae4); // Sky blue for info
+  // Semantic Colors (same names, better UI contrast)
+  static const Color successColor = Color(0xFF10B981); // Green
+  static const Color errorColor = Color(0xFFEF4444); // Red
+  static const Color warningColor = Color(0xFFF59E0B); // Amber
+  static const Color infoColor = Color(0xFF3B82F6); // Blue
 
   static ThemeData lightTheme = ThemeData(
     useMaterial3: true,
-    colorScheme: ColorScheme.fromSeed(
-      seedColor: primaryMedium,
+    brightness: Brightness.light,
+    scaffoldBackgroundColor: primaryVeryLight,
+    colorScheme: ColorScheme(
       brightness: Brightness.light,
       primary: primaryMedium,
+      onPrimary: Colors.white,
       secondary: primaryLight,
-      surface: primaryVeryLight,
+      onSecondary: Colors.black,
+      surface: Colors.white,
+      onSurface: Colors.black,
+      error: errorColor,
+      onError: Colors.white,
     ),
-    appBarTheme: const AppBarTheme(centerTitle: true, elevation: 0),
+    appBarTheme: const AppBarTheme(
+      backgroundColor: primaryMedium,
+      foregroundColor: Colors.white,
+      centerTitle: true,
+      elevation: 0,
+    ),
     cardTheme: const CardThemeData(
-      elevation: 2,
+      color: Colors.white,
+      elevation: 3,
+      margin: EdgeInsets.all(12),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(Radius.circular(12)),
+        borderRadius: BorderRadius.all(Radius.circular(16)),
       ),
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        backgroundColor: primaryMedium,
+        foregroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
       ),
     ),
   );
 
   static ThemeData darkTheme = ThemeData(
     useMaterial3: true,
-    colorScheme: ColorScheme.fromSeed(
-      seedColor: primaryMedium,
+    brightness: Brightness.dark,
+    scaffoldBackgroundColor: primaryDark,
+    colorScheme: ColorScheme(
       brightness: Brightness.dark,
       primary: primaryLight,
+      onPrimary: Colors.white,
       secondary: primaryMedium,
-      surface: primaryDark,
+      onSecondary: Colors.white,
+      surface: Color(0xFF374151), // Mid-dark surface for cards
+      onSurface: Colors.white,
+      error: errorColor,
+      onError: Colors.white,
     ),
-    appBarTheme: const AppBarTheme(centerTitle: true, elevation: 0),
+    appBarTheme: const AppBarTheme(
+      backgroundColor: Color(0xFF1F2937),
+      foregroundColor: Colors.white,
+      centerTitle: true,
+      elevation: 0,
+    ),
     cardTheme: const CardThemeData(
+      color: Color(0xFF1F2937),
       elevation: 2,
+      margin: EdgeInsets.all(12),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(Radius.circular(12)),
+        borderRadius: BorderRadius.all(Radius.circular(16)),
       ),
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        backgroundColor: primaryLight,
+        foregroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
       ),
     ),
   );

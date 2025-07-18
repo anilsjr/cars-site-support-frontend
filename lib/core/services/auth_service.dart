@@ -1,9 +1,9 @@
 import 'package:get/get.dart';
+import 'package:vehicle_site_support_web/core/constants/app_constants.dart'
+    show AppConstants;
 import 'storage_service.dart';
 
 class AuthService extends GetxService {
-  StorageService? _storageService;
-
   // Observable to track authentication state
   final RxBool _isAuthenticated = false.obs;
   bool get isAuthenticated => _isAuthenticated.value;
@@ -16,17 +16,16 @@ class AuthService extends GetxService {
   Future<void> onInit() async {
     super.onInit();
     // Only initialize if not already initialized
-    _storageService ??= Get.find<StorageService>();
     await checkAuthStatus();
   }
 
   /// Check if user is authenticated by verifying token and user data
   Future<bool> checkAuthStatus() async {
     try {
-      if (_storageService == null) return false;
-
-      final token = await _storageService!.getToken();
-      final userData = await _storageService!.getUserData();
+      final token = StorageService.getCookie(AppConstants.tokenKey);
+      final userData = await StorageService.getLocalStorage(
+        AppConstants.userDataKey,
+      );
 
       if (token != null && token.isNotEmpty && userData != null) {
         _isAuthenticated.value = true;
@@ -49,27 +48,22 @@ class AuthService extends GetxService {
     String token,
     Map<String, dynamic> userData,
   ) async {
-    if (_storageService == null) return;
-
-    await _storageService!.saveToken(token);
-    await _storageService!.saveUserData(userData);
+    StorageService.setCookie(AppConstants.tokenKey, token);
+    StorageService.setLocalStorage(AppConstants.userDataKey, userData);
     _isAuthenticated.value = true;
     _userData.value = userData;
   }
 
   /// Clear authentication state during logout
   Future<void> clearAuthentication() async {
-    if (_storageService == null) return;
-
-    await _storageService!.removeToken();
-    await _storageService!.removeUserData();
+    StorageService.removeCookie(AppConstants.tokenKey);
+    StorageService.removeLocalStorage(AppConstants.userDataKey);
     _isAuthenticated.value = false;
     _userData.value = null;
   }
 
   /// Get current auth token
   Future<String?> getToken() async {
-    if (_storageService == null) return null;
-    return await _storageService!.getToken();
+    return StorageService.getCookie(AppConstants.tokenKey);
   }
 }

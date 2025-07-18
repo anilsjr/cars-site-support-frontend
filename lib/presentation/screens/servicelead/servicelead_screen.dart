@@ -16,6 +16,7 @@ class ServiceLeadScreen extends StatefulWidget {
 class _ServiceLeadScreenState extends State<ServiceLeadScreen> {
   late ServiceLeadController _controller;
   final TextEditingController _searchController = TextEditingController();
+  final ScrollController _horizontalScrollController = ScrollController();
 
   @override
   void initState() {
@@ -29,6 +30,7 @@ class _ServiceLeadScreenState extends State<ServiceLeadScreen> {
   @override
   void dispose() {
     _searchController.dispose();
+    _horizontalScrollController.dispose();
     super.dispose();
   }
 
@@ -268,15 +270,19 @@ class _ServiceLeadScreenState extends State<ServiceLeadScreen> {
         ),
         child: Column(
           children: [
+            // Header with synchronized horizontal scrolling
             SingleChildScrollView(
+              controller: _horizontalScrollController,
               scrollDirection: Axis.horizontal,
               child: SizedBox(
-                width: 1040, // Total width of all columns (50+100+120+120+140+130+100+100+80)
+                width: 1040, // Total width of all columns
                 child: _buildTableHeader(theme),
               ),
             ),
+            // Data rows with synchronized horizontal scrolling
             Expanded(
               child: SingleChildScrollView(
+                controller: _horizontalScrollController,
                 scrollDirection: Axis.horizontal,
                 child: SizedBox(
                   width: 1040, // Same total width
@@ -287,6 +293,20 @@ class _ServiceLeadScreenState extends State<ServiceLeadScreen> {
                       return _buildTableRow(serviceLead, index, theme);
                     },
                   ),
+                ),
+              ),
+            ),
+            // Horizontal scrollbar
+            Container(
+              height: 20,
+              margin: const EdgeInsets.symmetric(horizontal: 16),
+              child: Scrollbar(
+                controller: _horizontalScrollController,
+                thumbVisibility: true,
+                child: SingleChildScrollView(
+                  controller: _horizontalScrollController,
+                  scrollDirection: Axis.horizontal,
+                  child: const SizedBox(width: 1040, height: 1),
                 ),
               ),
             ),
@@ -371,7 +391,11 @@ class _ServiceLeadScreenState extends State<ServiceLeadScreen> {
     );
   }
 
-  Widget _buildDataCell(String text, {required double width, bool isWrappable = false}) {
+  Widget _buildDataCell(
+    String text, {
+    required double width,
+    bool isWrappable = false,
+  }) {
     final theme = Theme.of(context);
     return SizedBox(
       width: width,
@@ -409,7 +433,8 @@ class _ServiceLeadScreenState extends State<ServiceLeadScreen> {
     return SizedBox(
       width: width,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 4),
         decoration: BoxDecoration(
           color: backgroundColor,
           borderRadius: BorderRadius.circular(4),
@@ -434,7 +459,8 @@ class _ServiceLeadScreenState extends State<ServiceLeadScreen> {
     return SizedBox(
       width: width,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
         decoration: BoxDecoration(
           color: color.withOpacity(0.1),
           borderRadius: BorderRadius.circular(4),
@@ -479,7 +505,7 @@ class _ServiceLeadScreenState extends State<ServiceLeadScreen> {
   Widget _buildPagination(ThemeData theme) {
     return Obx(
       () => Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(0),
         decoration: BoxDecoration(
           color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.3),
           border: Border(
@@ -520,7 +546,7 @@ class _ServiceLeadScreenState extends State<ServiceLeadScreen> {
                       onTap: () => _controller.goToPage(index + 1),
                       child: Container(
                         width: 32,
-                        height: 32,
+                        height: 20,
                         decoration: BoxDecoration(
                           color: _controller.currentPage.value == index + 1
                               ? AppTheme.primaryMedium
