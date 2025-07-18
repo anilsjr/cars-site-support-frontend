@@ -21,8 +21,8 @@ class StorageService {
   }) {
     if (!kIsWeb) return;
 
-    final expires = maxAge ?? const Duration(seconds: 25);
-final isLocalhost = html.window.location.hostname == 'localhost';
+    final expires = maxAge ?? const Duration(hours: 1);
+    final isLocalhost = html.window.location.hostname == 'localhost';
     final cookieDomain =
         domain ?? (isLocalhost ? 'localhost' : html.window.location.hostname);
 

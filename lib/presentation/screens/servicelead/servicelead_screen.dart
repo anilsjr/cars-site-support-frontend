@@ -13,14 +13,19 @@ class ServiceLeadScreen extends StatefulWidget {
   State<ServiceLeadScreen> createState() => _ServiceLeadScreenState();
 }
 
-class _ServiceLeadScreenState extends State<ServiceLeadScreen> {
-  late ServiceLeadController _controller;
+class _ServiceLeadScreenState extends State<ServiceLeadScreen>
+    with TickerProviderStateMixin {
+  late ServiceLeadController _controller = Get.find<ServiceLeadController>();
   final TextEditingController _searchController = TextEditingController();
-  final ScrollController _horizontalScrollController = ScrollController();
+  late TabController _tabController;
+  String _selectedTab = 'All';
+  int _rowsPerPage = 10;
+  int _currentPage = 1;
 
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 3, vsync: this);
     // Initialize service lead dependencies first
     ServiceLeadBinding().dependencies();
     _controller = Get.find<ServiceLeadController>();
@@ -30,7 +35,7 @@ class _ServiceLeadScreenState extends State<ServiceLeadScreen> {
   @override
   void dispose() {
     _searchController.dispose();
-    _horizontalScrollController.dispose();
+    _tabController.dispose();
     super.dispose();
   }
 
@@ -44,8 +49,17 @@ class _ServiceLeadScreenState extends State<ServiceLeadScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildHeader(theme),
-          _buildFiltersAndSearch(theme),
-          Expanded(child: _buildDataTable(theme)),
+          _buildTabFilters(theme),
+          _buildSearchBar(theme),
+          Expanded(
+            child: Column(
+              children: [
+                _buildTableHeader(theme),
+                Expanded(child: _buildServiceLeadsList(theme)),
+              ],
+            ),
+          ),
+          _buildPagination(theme),
         ],
       ),
     );
@@ -60,12 +74,10 @@ class _ServiceLeadScreenState extends State<ServiceLeadScreen> {
           bottom: BorderSide(color: theme.dividerColor.withOpacity(0.2)),
         ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.center,
+      child: Row(
         children: [
           Icon(Icons.assignment, color: AppTheme.primaryMedium, size: 28),
-          // const SizedBox(width: 12),
+          const SizedBox(width: 12),
           Text(
             'Service Leads',
             style: TextStyle(
@@ -74,83 +86,60 @@ class _ServiceLeadScreenState extends State<ServiceLeadScreen> {
               color: theme.colorScheme.onSurface,
             ),
           ),
-          Obx(() => _buildSummaryCards()),
+          const Spacer(),
+          // User profile section can be added here if needed
         ],
       ),
     );
   }
 
-  Widget _buildSummaryCards() {
-    return Row(
-      children: [
-        _buildSummaryCard(
-          'Total',
-          _controller.totalCount.value,
-          AppTheme.primaryMedium,
-        ),
-        const SizedBox(width: 16),
-        _buildSummaryCard(
-          'Annual',
-          _controller.annualCount.value,
-          Colors.orange,
-        ),
-        const SizedBox(width: 16),
-        _buildSummaryCard('WGM', _controller.wgmCount.value, Colors.green),
-      ],
-    );
-  }
-
-  Widget _buildSummaryCard(String title, int count, Color color) {
-    final theme = Theme.of(context);
+  Widget _buildTabFilters(ThemeData theme) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withOpacity(0.3)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-              color: theme.colorScheme.onSurface.withOpacity(0.7),
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            count.toString(),
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
-          ),
-        ],
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Obx(
+        () => TabBar(
+          controller: _tabController,
+          labelColor: AppTheme.primaryMedium,
+          unselectedLabelColor: theme.colorScheme.onSurface.withOpacity(0.6),
+          indicatorColor: AppTheme.primaryMedium,
+          labelStyle: const TextStyle(fontWeight: FontWeight.w600),
+          unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w400),
+          onTap: (index) {
+            setState(() {
+              switch (index) {
+                case 0:
+                  _selectedTab = 'All';
+                  break;
+                case 1:
+                  _selectedTab = 'Annual';
+                  break;
+                case 2:
+                  _selectedTab = 'WGM';
+                  break;
+              }
+            });
+            _filterServiceLeads();
+          },
+          tabs: [
+            Tab(text: 'All (${_controller.totalCount.value})'),
+            Tab(text: 'Annual (${_controller.annualCount.value})'),
+            Tab(text: 'WGM (${_controller.wgmCount.value})'),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildFiltersAndSearch(ThemeData theme) {
+  Widget _buildSearchBar(ThemeData theme) {
     return Container(
       padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.3),
-        border: Border(
-          bottom: BorderSide(color: theme.dividerColor.withOpacity(0.2)),
-        ),
-      ),
       child: Row(
         children: [
           Expanded(
-            flex: 2,
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
-                hintText: 'Search by VIN, Registration, Model...',
+                hintText: 'Search Chassis / Fleet No (Door No)',
                 prefixIcon: Icon(
                   Icons.search,
                   color: theme.colorScheme.onSurface.withOpacity(0.6),
@@ -167,540 +156,483 @@ class _ServiceLeadScreenState extends State<ServiceLeadScreen> {
                   borderRadius: BorderRadius.circular(8),
                   borderSide: BorderSide(color: AppTheme.primaryMedium),
                 ),
-                filled: true,
-                fillColor: theme.colorScheme.surface,
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
               ),
-              onChanged: (value) => _controller.searchServiceLeads(value),
+              onChanged: (value) {
+                // Implement search functionality
+                _filterServiceLeads();
+              },
             ),
           ),
           const SizedBox(width: 16),
-          Obx(
-            () => DropdownButton<String>(
-              value: _controller.selectedStatus.value.isEmpty
-                  ? null
-                  : _controller.selectedStatus.value,
-              hint: const Text('Status'),
-              items: ['All', 'Pending', 'Completed', 'In Progress']
-                  .map(
-                    (status) => DropdownMenuItem(
-                      value: status == 'All' ? '' : status,
-                      child: Text(status),
-                    ),
-                  )
-                  .toList(),
-              onChanged: (value) => _controller.filterByStatus(value ?? ''),
+          IconButton(
+            icon: Icon(
+              Icons.filter_list,
+              color: theme.colorScheme.onSurface.withOpacity(0.6),
             ),
-          ),
-          const SizedBox(width: 16),
-          Obx(
-            () => DropdownButton<String>(
-              value: _controller.selectedServiceType.value.isEmpty
-                  ? null
-                  : _controller.selectedServiceType.value,
-              hint: const Text('Service Type'),
-              items: ['All', 'WGM', 'Annual']
-                  .map(
-                    (type) => DropdownMenuItem(
-                      value: type == 'All' ? '' : type,
-                      child: Text(type),
-                    ),
-                  )
-                  .toList(),
-              onChanged: (value) =>
-                  _controller.filterByServiceType(value ?? ''),
-            ),
-          ),
-          const SizedBox(width: 16),
-          ElevatedButton.icon(
-            onPressed: () => _controller.loadServiceLeads(),
-            icon: const Icon(Icons.refresh),
-            label: const Text('Refresh'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primaryMedium,
-              foregroundColor: Colors.white,
-            ),
+            onPressed: () {
+              // Implement filter functionality
+            },
           ),
         ],
       ),
     );
-  }
-
-  Widget _buildDataTable(ThemeData theme) {
-    return Obx(() {
-      if (_controller.isLoading.value) {
-        return const Center(child: CircularProgressIndicator());
-      }
-
-      if (_controller.serviceLeads.isEmpty) {
-        return Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.assignment_outlined,
-                size: 64,
-                color: theme.colorScheme.onSurface.withOpacity(0.3),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'No service leads found',
-                style: TextStyle(
-                  fontSize: 18,
-                  color: theme.colorScheme.onSurface.withOpacity(0.6),
-                ),
-              ),
-            ],
-          ),
-        );
-      }
-
-      return Container(
-        margin: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          color: theme.colorScheme.surface,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: theme.dividerColor.withOpacity(0.2)),
-          boxShadow: [
-            BoxShadow(
-              color: theme.shadowColor.withOpacity(0.1),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Column(
-          children: [
-            // Header with synchronized horizontal scrolling
-            SingleChildScrollView(
-              controller: _horizontalScrollController,
-              scrollDirection: Axis.horizontal,
-              child: SizedBox(
-                width: 1040, // Total width of all columns
-                child: _buildTableHeader(theme),
-              ),
-            ),
-            // Data rows with synchronized horizontal scrolling
-            Expanded(
-              child: SingleChildScrollView(
-                controller: _horizontalScrollController,
-                scrollDirection: Axis.horizontal,
-                child: SizedBox(
-                  width: 1040, // Same total width
-                  child: ListView.builder(
-                    itemCount: _controller.serviceLeads.length,
-                    itemBuilder: (context, index) {
-                      final serviceLead = _controller.serviceLeads[index];
-                      return _buildTableRow(serviceLead, index, theme);
-                    },
-                  ),
-                ),
-              ),
-            ),
-            // Horizontal scrollbar
-            Container(
-              height: 20,
-              margin: const EdgeInsets.symmetric(horizontal: 16),
-              child: Scrollbar(
-                controller: _horizontalScrollController,
-                thumbVisibility: true,
-                child: SingleChildScrollView(
-                  controller: _horizontalScrollController,
-                  scrollDirection: Axis.horizontal,
-                  child: const SizedBox(width: 1040, height: 1),
-                ),
-              ),
-            ),
-            _buildPagination(theme),
-          ],
-        ),
-      );
-    });
   }
 
   Widget _buildTableHeader(ThemeData theme) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.5),
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(12),
-          topRight: Radius.circular(12),
-        ),
-      ),
-      child: Row(
-        children: [
-          _buildHeaderCell('ID', width: 50),
-          _buildHeaderCell('Order Type', width: 100),
-          _buildHeaderCell('Model No', width: 120),
-          _buildHeaderCell('VIN No', width: 120),
-          _buildHeaderCell('Registration', width: 140),
-          _buildHeaderCell('Schedule Date', width: 130),
-          _buildHeaderCell('Status', width: 100),
-          _buildHeaderCell('Service Type', width: 100),
-          _buildHeaderCell('Actions', width: 80),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHeaderCell(String title, {required double width}) {
-    final theme = Theme.of(context);
-    return SizedBox(
-      width: width,
-      child: Text(
-        title,
-        style: TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w600,
-          color: theme.colorScheme.onSurface,
-        ),
-        overflow: TextOverflow.ellipsis,
-      ),
-    );
-  }
-
-  Widget _buildTableRow(ServiceLead serviceLead, int index, ThemeData theme) {
-    final isEven = index % 2 == 0;
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: isEven
-            ? theme.colorScheme.surface
-            : theme.colorScheme.surfaceContainerHighest.withOpacity(0.2),
+        color: theme.colorScheme.surface,
         border: Border(
-          bottom: BorderSide(color: theme.dividerColor.withOpacity(0.1)),
+          bottom: BorderSide(color: theme.dividerColor.withOpacity(0.2)),
         ),
       ),
       child: Row(
         children: [
-          _buildDataCell(serviceLead.numericId.toString(), width: 50),
-          _buildDataCell(serviceLead.orderType, width: 100),
-          _buildDataCell(serviceLead.modelNo, width: 120, isWrappable: true),
-          _buildDataCell(serviceLead.vinNo, width: 120),
-          _buildDataCell(serviceLead.registrationNo, width: 140),
-          _buildDataCell(
-            DateFormat('dd/MM/yyyy').format(serviceLead.scheduleDate),
-            width: 130,
+          // Model Column
+          Expanded(
+            flex: 2,
+            child: Text(
+              'Model',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: theme.colorScheme.onSurface.withOpacity(0.7),
+              ),
+            ),
           ),
-          _buildStatusCell(serviceLead.leadStatus, width: 100),
-          _buildServiceTypeCell(serviceLead.serviceType, width: 100),
-          _buildActionsCell(serviceLead, width: 80),
+          // Door No
+          Expanded(
+            flex: 1,
+            child: Text(
+              'Door No.',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: theme.colorScheme.onSurface.withOpacity(0.7),
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          // Chassis No
+          Expanded(
+            flex: 2,
+            child: Text(
+              'Chassis No.',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: theme.colorScheme.onSurface.withOpacity(0.7),
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          // Registration No
+          Expanded(
+            flex: 2,
+            child: Text(
+              'Registration No.',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: theme.colorScheme.onSurface.withOpacity(0.7),
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          // Schedule Date
+          Expanded(
+            flex: 2,
+            child: Text(
+              'Schedule Date',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: theme.colorScheme.onSurface.withOpacity(0.7),
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          // Lead Status
+          Expanded(
+            flex: 2,
+            child: Text(
+              'Lead Status',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: theme.colorScheme.onSurface.withOpacity(0.7),
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          // Reschedule Count
+          Expanded(
+            flex: 1,
+            child: Text(
+              'Reschedule Count',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: theme.colorScheme.onSurface.withOpacity(0.7),
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          // Actions
+          Expanded(
+            flex: 1,
+            child: Text(
+              'Actions',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: theme.colorScheme.onSurface.withOpacity(0.7),
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildDataCell(
-    String text, {
-    required double width,
-    bool isWrappable = false,
-  }) {
-    final theme = Theme.of(context);
-    return SizedBox(
-      width: width,
-      child: Text(
-        text,
-        style: TextStyle(fontSize: 13, color: theme.colorScheme.onSurface),
-        maxLines: isWrappable ? 2 : 1,
-        overflow: TextOverflow.ellipsis,
+  Widget _buildServiceLeadsList(ThemeData theme) {
+    return Obx(
+      () => _controller.isLoading.value
+          ? const Center(child: CircularProgressIndicator())
+          : _getFilteredServiceLeads().isEmpty
+          ? const Center(
+              child: Text(
+                'No service leads found',
+                style: TextStyle(fontSize: 16),
+              ),
+            )
+          : ListView.builder(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              itemCount: _getPaginatedServiceLeads().length,
+              itemBuilder: (context, index) {
+                final lead = _getPaginatedServiceLeads()[index];
+                return _buildServiceLeadCard(lead, theme);
+              },
+            ),
+    );
+  }
+
+  Widget _buildServiceLeadCard(ServiceLead lead, ThemeData theme) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: theme.cardColor,
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: [
+          BoxShadow(
+            color: theme.shadowColor.withOpacity(0.1),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+        border: Border.all(color: theme.dividerColor.withOpacity(0.2)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            // Model Column
+            Expanded(
+              flex: 2,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    lead.modelNo,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: theme.colorScheme.onSurface,
+                    ),
+                  ),
+                  Text(
+                    lead.serviceType,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: theme.colorScheme.onSurface.withOpacity(0.6),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Door No
+            Expanded(
+              flex: 1,
+              child: Text(
+                lead.doorNo,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: theme.colorScheme.onSurface,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+            // Chassis No
+            Expanded(
+              flex: 2,
+              child: Text(
+                lead.chassisNo,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: theme.colorScheme.onSurface,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+            // Registration No
+            Expanded(
+              flex: 2,
+              child: Text(
+                lead.registrationNo,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: theme.colorScheme.onSurface,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+            // Schedule Date
+            Expanded(
+              flex: 2,
+              child: Text(
+                DateFormat('dd/MM/yyyy').format(lead.scheduleDate),
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: theme.colorScheme.onSurface,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+            // Lead Status
+            Expanded(
+              flex: 2,
+              child: Container(
+                alignment: Alignment.center,
+                child: _buildStatusBadge(lead.leadStatus, theme),
+              ),
+            ),
+            // Reschedule Count
+            Expanded(
+              flex: 1,
+              child: Text(
+                lead.rescheduledCount.toString(),
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: theme.colorScheme.onSurface,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+            // Actions
+            Expanded(
+              flex: 1,
+              child: IconButton(
+                icon: const Icon(Icons.edit, size: 20),
+                onPressed: () {
+                  // Handle edit action
+                },
+                tooltip: 'Edit',
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildStatusCell(String status, {required double width}) {
-    Color statusColor;
+  Widget _buildStatusBadge(String status, ThemeData theme) {
     Color backgroundColor;
+    Color textColor;
 
     switch (status.toLowerCase()) {
       case 'pending':
-        statusColor = Colors.orange;
-        backgroundColor = Colors.orange.withOpacity(0.1);
-        break;
-      case 'completed':
-        statusColor = Colors.green;
-        backgroundColor = Colors.green.withOpacity(0.1);
+        backgroundColor = Colors.grey.withOpacity(0.2);
+        textColor = Colors.grey.shade700;
         break;
       case 'in progress':
-        statusColor = Colors.blue;
-        backgroundColor = Colors.blue.withOpacity(0.1);
+        backgroundColor = Colors.orange.withOpacity(0.2);
+        textColor = Colors.orange.shade700;
+        break;
+      case 'completed':
+        backgroundColor = Colors.green.withOpacity(0.2);
+        textColor = Colors.green.shade700;
         break;
       default:
-        statusColor = Colors.grey;
-        backgroundColor = Colors.grey.withOpacity(0.1);
+        backgroundColor = theme.colorScheme.surface;
+        textColor = theme.colorScheme.onSurface;
     }
 
-    return SizedBox(
-      width: width,
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-        padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 4),
-        decoration: BoxDecoration(
-          color: backgroundColor,
-          borderRadius: BorderRadius.circular(4),
-        ),
-        child: Text(
-          status,
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w500,
-            color: statusColor,
-          ),
-          textAlign: TextAlign.center,
-          overflow: TextOverflow.ellipsis,
-        ),
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(16),
       ),
-    );
-  }
-
-  Widget _buildServiceTypeCell(String serviceType, {required double width}) {
-    final color = serviceType == 'WGM' ? Colors.green : Colors.blue;
-
-    return SizedBox(
-      width: width,
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-        decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(4),
+      child: Text(
+        status,
+        style: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w500,
+          color: textColor,
         ),
-        child: Text(
-          serviceType,
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w500,
-            color: color,
-          ),
-          textAlign: TextAlign.center,
-          overflow: TextOverflow.ellipsis,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildActionsCell(ServiceLead serviceLead, {required double width}) {
-    return SizedBox(
-      width: width,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          IconButton(
-            onPressed: () => _showServiceLeadDetails(serviceLead),
-            icon: const Icon(Icons.visibility),
-            iconSize: 18,
-            tooltip: 'View Details',
-          ),
-          IconButton(
-            onPressed: () => _editServiceLead(serviceLead),
-            icon: const Icon(Icons.edit),
-            iconSize: 18,
-            tooltip: 'Edit',
-          ),
-        ],
       ),
     );
   }
 
   Widget _buildPagination(ThemeData theme) {
-    return Obx(
-      () => Container(
-        padding: const EdgeInsets.all(0),
-        decoration: BoxDecoration(
-          color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.3),
-          border: Border(
-            top: BorderSide(color: theme.dividerColor.withOpacity(0.2)),
-          ),
-          borderRadius: const BorderRadius.only(
-            bottomLeft: Radius.circular(12),
-            bottomRight: Radius.circular(12),
-          ),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'Showing ${(_controller.currentPage.value - 1) * _controller.limit.value + 1}'
-              ' to ${_controller.currentPage.value * _controller.limit.value > _controller.totalItems.value ? _controller.totalItems.value : _controller.currentPage.value * _controller.limit.value}'
-              ' of ${_controller.totalItems.value} entries',
-              style: TextStyle(
-                fontSize: 14,
-                color: theme.colorScheme.onSurface.withOpacity(0.7),
-              ),
-            ),
-            Row(
-              children: [
-                IconButton(
-                  onPressed: _controller.currentPage.value > 1
-                      ? () => _controller.goToPage(
-                          _controller.currentPage.value - 1,
-                        )
-                      : null,
-                  icon: const Icon(Icons.chevron_left),
-                ),
-                ...List.generate(
-                  _controller.totalPages.value,
-                  (index) => Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4),
-                    child: InkWell(
-                      onTap: () => _controller.goToPage(index + 1),
-                      child: Container(
-                        width: 32,
-                        height: 20,
-                        decoration: BoxDecoration(
-                          color: _controller.currentPage.value == index + 1
-                              ? AppTheme.primaryMedium
-                              : Colors.transparent,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Center(
-                          child: Text(
-                            '${index + 1}',
-                            style: TextStyle(
-                              color: _controller.currentPage.value == index + 1
-                                  ? Colors.white
-                                  : theme.colorScheme.onSurface,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ).take(5),
-                IconButton(
-                  onPressed:
-                      _controller.currentPage.value <
-                          _controller.totalPages.value
-                      ? () => _controller.goToPage(
-                          _controller.currentPage.value + 1,
-                        )
-                      : null,
-                  icon: const Icon(Icons.chevron_right),
-                ),
-              ],
-            ),
-          ],
+    final totalItems = _getFilteredServiceLeads().length;
+    final totalPages = (totalItems / _rowsPerPage).ceil();
+
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        border: Border(
+          top: BorderSide(color: theme.dividerColor.withOpacity(0.2)),
         ),
       ),
-    );
-  }
-
-  void _showServiceLeadDetails(ServiceLead serviceLead) {
-    showDialog(
-      context: context,
-      builder: (context) => ServiceLeadDetailsDialog(serviceLead: serviceLead),
-    );
-  }
-
-  void _editServiceLead(ServiceLead serviceLead) {
-    // Navigate to edit screen or show edit dialog
-    Get.snackbar(
-      'Info',
-      'Edit functionality will be implemented',
-      snackPosition: SnackPosition.TOP,
-    );
-  }
-}
-
-class ServiceLeadDetailsDialog extends StatelessWidget {
-  final ServiceLead serviceLead;
-
-  const ServiceLeadDetailsDialog({super.key, required this.serviceLead});
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Container(
-        width: 600,
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(Icons.assignment, color: AppTheme.primaryMedium),
-                const SizedBox(width: 12),
-                Text(
-                  'Service Lead Details',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: theme.colorScheme.onSurface,
-                  ),
-                ),
-                const Spacer(),
-                IconButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  icon: const Icon(Icons.close),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-            _buildDetailRow('ID', serviceLead.numericId.toString(), theme),
-            _buildDetailRow('Order Type', serviceLead.orderType, theme),
-            _buildDetailRow('Model No', serviceLead.modelNo, theme),
-            _buildDetailRow('VIN No', serviceLead.vinNo, theme),
-            _buildDetailRow('Chassis No', serviceLead.chassisNo, theme),
-            _buildDetailRow(
-              'Registration No',
-              serviceLead.registrationNo,
-              theme,
-            ),
-            _buildDetailRow(
-              'Schedule Date',
-              DateFormat('dd/MM/yyyy HH:mm').format(serviceLead.scheduleDate),
-              theme,
-            ),
-            _buildDetailRow('Lead Status', serviceLead.leadStatus, theme),
-            _buildDetailRow('Service Type', serviceLead.serviceType, theme),
-            _buildDetailRow('Remark', serviceLead.remark, theme),
-            _buildDetailRow('Plant Code', serviceLead.plantCode, theme),
-            const SizedBox(height: 24),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('Close'),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDetailRow(String label, String value, ThemeData theme) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          SizedBox(
-            width: 120,
-            child: Text(
-              label,
-              style: TextStyle(
-                fontWeight: FontWeight.w500,
-                color: theme.colorScheme.onSurface.withOpacity(0.7),
+          Row(
+            children: [
+              Text(
+                'Rows per page:',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: theme.colorScheme.onSurface.withOpacity(0.7),
+                ),
               ),
+              const SizedBox(width: 8),
+              DropdownButton<int>(
+                value: _rowsPerPage,
+                items: [5, 10, 25, 50].map((int value) {
+                  return DropdownMenuItem<int>(
+                    value: value,
+                    child: Text(value.toString()),
+                  );
+                }).toList(),
+                onChanged: (int? newValue) {
+                  setState(() {
+                    _rowsPerPage = newValue ?? 10;
+                    _currentPage = 1;
+                  });
+                },
+                underline: Container(),
+              ),
+            ],
+          ),
+          Text(
+            '${_getStartIndex() + 1} of ${totalItems > 0 ? _getEndIndex() : 0}',
+            style: TextStyle(
+              fontSize: 14,
+              color: theme.colorScheme.onSurface.withOpacity(0.7),
             ),
           ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Text(
-              value,
-              style: TextStyle(color: theme.colorScheme.onSurface),
-            ),
+          Row(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.chevron_left),
+                onPressed: _currentPage > 1
+                    ? () {
+                        setState(() {
+                          _currentPage--;
+                        });
+                      }
+                    : null,
+              ),
+              Text(
+                '$_currentPage of $totalPages',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: theme.colorScheme.onSurface.withOpacity(0.7),
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.chevron_right),
+                onPressed: _currentPage < totalPages
+                    ? () {
+                        setState(() {
+                          _currentPage++;
+                        });
+                      }
+                    : null,
+              ),
+            ],
           ),
         ],
       ),
     );
+  }
+
+  // Helper methods
+  List<ServiceLead> _getFilteredServiceLeads() {
+    List<ServiceLead> filtered = _controller.serviceLeads.toList();
+
+    // Filter by tab selection
+    if (_selectedTab == 'Annual') {
+      filtered = filtered
+          .where((lead) => lead.serviceType.toLowerCase().contains('annual'))
+          .toList();
+    } else if (_selectedTab == 'WGM') {
+      filtered = filtered
+          .where((lead) => lead.serviceType.toLowerCase().contains('wgm'))
+          .toList();
+    }
+
+    // Filter by search query
+    final query = _searchController.text.toLowerCase();
+    if (query.isNotEmpty) {
+      filtered = filtered
+          .where(
+            (lead) =>
+                lead.chassisNo.toLowerCase().contains(query) ||
+                lead.doorNo.toLowerCase().contains(query) ||
+                lead.registrationNo.toLowerCase().contains(query) ||
+                lead.modelNo.toLowerCase().contains(query),
+          )
+          .toList();
+    }
+
+    return filtered;
+  }
+
+  List<ServiceLead> _getPaginatedServiceLeads() {
+    final filtered = _getFilteredServiceLeads();
+    final startIndex = _getStartIndex();
+    final endIndex = _getEndIndex();
+
+    if (startIndex >= filtered.length) return [];
+
+    return filtered.sublist(
+      startIndex,
+      endIndex > filtered.length ? filtered.length : endIndex,
+    );
+  }
+
+  int _getStartIndex() => (_currentPage - 1) * _rowsPerPage;
+
+  int _getEndIndex() => _currentPage * _rowsPerPage;
+
+  void _filterServiceLeads() {
+    setState(() {
+      _currentPage = 1; // Reset to first page when filtering
+    });
   }
 }
