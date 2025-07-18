@@ -42,6 +42,8 @@ class _ServiceLeadScreenState extends State<ServiceLeadScreen>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isWideScreen = screenWidth > 800;
 
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
@@ -52,12 +54,25 @@ class _ServiceLeadScreenState extends State<ServiceLeadScreen>
           _buildTabFilters(theme),
           _buildSearchBar(theme),
           Expanded(
-            child: Column(
-              children: [
-                _buildTableHeader(theme),
-                Expanded(child: _buildServiceLeadsList(theme)),
-              ],
-            ),
+            child: isWideScreen
+                ? Column(
+                    children: [
+                      _buildTableHeader(theme),
+                      Expanded(child: _buildServiceLeadsList(theme)),
+                    ],
+                  )
+                : SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: SizedBox(
+                      width: 800, // Total width of all columns
+                      child: Column(
+                        children: [
+                          _buildTableHeader(theme),
+                          Expanded(child: _buildServiceLeadsList(theme)),
+                        ],
+                      ),
+                    ),
+                  ),
           ),
           _buildPagination(theme),
         ],
@@ -132,10 +147,13 @@ class _ServiceLeadScreenState extends State<ServiceLeadScreen>
 
   Widget _buildSearchBar(ThemeData theme) {
     return Container(
+      width: 500,
+      margin: const EdgeInsets.only(top: 16, bottom: 16),
       padding: const EdgeInsets.all(24),
       child: Row(
         children: [
-          Expanded(
+          Flexible(
+            fit: FlexFit.tight,
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
@@ -183,8 +201,11 @@ class _ServiceLeadScreenState extends State<ServiceLeadScreen>
   }
 
   Widget _buildTableHeader(ThemeData theme) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isWideScreen = screenWidth > 800;
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 16),
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
         border: Border(
@@ -194,108 +215,217 @@ class _ServiceLeadScreenState extends State<ServiceLeadScreen>
       child: Row(
         children: [
           // Model Column
-          Expanded(
-            flex: 2,
-            child: Text(
-              'Model',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: theme.colorScheme.onSurface.withOpacity(0.7),
-              ),
-            ),
-          ),
+          isWideScreen
+              ? Expanded(
+                  flex: 3,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 16,
+                    ),
+                    child: Text(
+                      'Model',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: theme.colorScheme.onSurface.withOpacity(0.7),
+                      ),
+                    ),
+                  ),
+                )
+              : SizedBox(
+                  width: 160,
+                  child: Text(
+                    'Model',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: theme.colorScheme.onSurface.withOpacity(0.7),
+                    ),
+                  ),
+                ),
           // Door No
-          Expanded(
-            flex: 1,
-            child: Text(
-              'Door No.',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: theme.colorScheme.onSurface.withOpacity(0.7),
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ),
+          isWideScreen
+              ? Expanded(
+                  flex: 1,
+                  child: Text(
+                    'Door No.',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: theme.colorScheme.onSurface.withOpacity(0.7),
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                )
+              : SizedBox(
+                  width: 60,
+                  child: Text(
+                    'Door No.',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: theme.colorScheme.onSurface.withOpacity(0.7),
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
           // Chassis No
-          Expanded(
-            flex: 2,
-            child: Text(
-              'Chassis No.',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: theme.colorScheme.onSurface.withOpacity(0.7),
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ),
+          isWideScreen
+              ? Expanded(
+                  flex: 2,
+                  child: Text(
+                    'Chassis No.',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: theme.colorScheme.onSurface.withOpacity(0.7),
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                )
+              : SizedBox(
+                  width: 90,
+                  child: Text(
+                    'Chassis No.',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: theme.colorScheme.onSurface.withOpacity(0.7),
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
           // Registration No
-          Expanded(
-            flex: 2,
-            child: Text(
-              'Registration No.',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: theme.colorScheme.onSurface.withOpacity(0.7),
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ),
+          isWideScreen
+              ? Expanded(
+                  flex: 2,
+                  child: Text(
+                    'Registration No.',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: theme.colorScheme.onSurface.withOpacity(0.7),
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                )
+              : SizedBox(
+                  width: 110,
+                  child: Text(
+                    'Registration No.',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: theme.colorScheme.onSurface.withOpacity(0.7),
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
           // Schedule Date
-          Expanded(
-            flex: 2,
-            child: Text(
-              'Schedule Date',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: theme.colorScheme.onSurface.withOpacity(0.7),
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ),
+          isWideScreen
+              ? Expanded(
+                  flex: 2,
+                  child: Text(
+                    'Schedule Date',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: theme.colorScheme.onSurface.withOpacity(0.7),
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                )
+              : SizedBox(
+                  width: 90,
+                  child: Text(
+                    'Schedule Date',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: theme.colorScheme.onSurface.withOpacity(0.7),
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
           // Lead Status
-          Expanded(
-            flex: 2,
-            child: Text(
-              'Lead Status',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: theme.colorScheme.onSurface.withOpacity(0.7),
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ),
+          isWideScreen
+              ? Expanded(
+                  flex: 2,
+                  child: Text(
+                    'Lead Status',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: theme.colorScheme.onSurface.withOpacity(0.7),
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                )
+              : SizedBox(
+                  width: 100,
+                  child: Text(
+                    'Lead Status',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: theme.colorScheme.onSurface.withOpacity(0.7),
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
           // Reschedule Count
-          Expanded(
-            flex: 1,
-            child: Text(
-              'Reschedule Count',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: theme.colorScheme.onSurface.withOpacity(0.7),
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ),
+          isWideScreen
+              ? Expanded(
+                  flex: 1,
+                  child: Text(
+                    'Reschd Count',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: theme.colorScheme.onSurface.withOpacity(0.7),
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                )
+              : SizedBox(
+                  width: 80,
+                  child: Text(
+                    'Reschd Count',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: theme.colorScheme.onSurface.withOpacity(0.7),
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
           // Actions
-          Expanded(
-            flex: 1,
-            child: Text(
-              'Actions',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: theme.colorScheme.onSurface.withOpacity(0.7),
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ),
+          isWideScreen
+              ? Expanded(
+                  flex: 1,
+                  child: Text(
+                    'Actions',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: theme.colorScheme.onSurface.withOpacity(0.7),
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                )
+              : SizedBox(
+                  width: 70,
+                  child: Text(
+                    'Actions',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: theme.colorScheme.onSurface.withOpacity(0.7),
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
         ],
       ),
     );
@@ -313,7 +443,7 @@ class _ServiceLeadScreenState extends State<ServiceLeadScreen>
               ),
             )
           : ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
+              padding: const EdgeInsets.symmetric(horizontal: 0),
               itemCount: _getPaginatedServiceLeads().length,
               itemBuilder: (context, index) {
                 final lead = _getPaginatedServiceLeads()[index];
@@ -324,134 +454,230 @@ class _ServiceLeadScreenState extends State<ServiceLeadScreen>
   }
 
   Widget _buildServiceLeadCard(ServiceLead lead, ThemeData theme) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isWideScreen = screenWidth > 800;
+
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 1),
       decoration: BoxDecoration(
-        color: theme.cardColor,
-        borderRadius: BorderRadius.circular(8),
-        boxShadow: [
-          BoxShadow(
-            color: theme.shadowColor.withOpacity(0.1),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-        border: Border.all(color: theme.dividerColor.withOpacity(0.2)),
+        color: theme.colorScheme.surface,
+        border: Border(
+          bottom: BorderSide(color: theme.dividerColor.withOpacity(0.1)),
+        ),
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          children: [
-            // Model Column
-            Expanded(
-              flex: 2,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
+      child: Row(
+        children: [
+          // Model Column
+          isWideScreen
+              ? Expanded(
+                  flex: 3,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 16,
+                    ),
+                    child: Text(
+                      lead.modelNo,
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: theme.colorScheme.onSurface,
+                      ),
+                      // overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                )
+              : SizedBox(
+                  width: 180,
+                  child: Text(
                     lead.modelNo,
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: 13,
                       fontWeight: FontWeight.w600,
                       color: theme.colorScheme.onSurface,
                     ),
+                    // overflow: TextOverflow.ellipsis,
                   ),
-                  Text(
-                    lead.serviceType,
+                ),
+          // Door No
+          isWideScreen
+              ? Expanded(
+                  flex: 1,
+                  child: Text(
+                    lead.doorNo,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: theme.colorScheme.onSurface,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                )
+              : SizedBox(
+                  width: 60,
+                  child: Text(
+                    lead.doorNo,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: theme.colorScheme.onSurface,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+          // Chassis No
+          isWideScreen
+              ? Expanded(
+                  flex: 2,
+                  child: Text(
+                    lead.chassisNo,
                     style: TextStyle(
                       fontSize: 12,
-                      color: theme.colorScheme.onSurface.withOpacity(0.6),
+                      fontWeight: FontWeight.w500,
+                      color: theme.colorScheme.onSurface,
+                    ),
+                    textAlign: TextAlign.center,
+                    // overflow: TextOverflow.ellipsis,
+                  ),
+                )
+              : SizedBox(
+                  width: 90,
+                  child: Text(
+                    lead.chassisNo,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: theme.colorScheme.onSurface,
+                    ),
+                    textAlign: TextAlign.center,
+                    // overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+          // Registration No
+          isWideScreen
+              ? Expanded(
+                  flex: 2,
+                  child: Text(
+                    lead.registrationNo,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: theme.colorScheme.onSurface,
+                    ),
+                    textAlign: TextAlign.center,
+                    // overflow: TextOverflow.ellipsis,
+                  ),
+                )
+              : SizedBox(
+                  width: 110,
+                  child: Text(
+                    lead.registrationNo,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: theme.colorScheme.onSurface,
+                    ),
+                    textAlign: TextAlign.center,
+                    // overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+          // Schedule Date
+          isWideScreen
+              ? Expanded(
+                  flex: 2,
+                  child: Text(
+                    DateFormat('dd/MM/yy').format(lead.scheduleDate),
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: theme.colorScheme.onSurface,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                )
+              : SizedBox(
+                  width: 90,
+                  child: Text(
+                    DateFormat('dd/MM/yy').format(lead.scheduleDate),
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: theme.colorScheme.onSurface,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+          // Lead Status
+          isWideScreen
+              ? Expanded(
+                  flex: 2,
+                  child: Container(
+                    alignment: Alignment.center,
+                    child: _buildStatusBadge(lead.leadStatus, theme),
+                  ),
+                )
+              : SizedBox(
+                  width: 100,
+                  child: Container(
+                    alignment: Alignment.center,
+                    child: _buildStatusBadge(lead.leadStatus, theme),
+                  ),
+                ),
+          // Reschedule Count
+          isWideScreen
+              ? Expanded(
+                  flex: 1,
+                  child: Text(
+                    lead.rescheduledCount.toString(),
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: theme.colorScheme.onSurface,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                )
+              : SizedBox(
+                  width: 80,
+                  child: Text(
+                    lead.rescheduledCount.toString(),
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: theme.colorScheme.onSurface,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+          // Actions
+          isWideScreen
+              ? Expanded(
+                  flex: 1,
+                  child: Container(
+                    alignment: Alignment.center,
+                    child: IconButton(
+                      icon: const Icon(Icons.edit, size: 18),
+                      onPressed: () {
+                        // Handle edit action
+                      },
+                      tooltip: 'Edit',
                     ),
                   ),
-                ],
-              ),
-            ),
-            // Door No
-            Expanded(
-              flex: 1,
-              child: Text(
-                lead.doorNo,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: theme.colorScheme.onSurface,
+                )
+              : SizedBox(
+                  width: 70,
+                  child: Container(
+                    alignment: Alignment.center,
+                    child: IconButton(
+                      icon: const Icon(Icons.edit, size: 18),
+                      onPressed: () {
+                        // Handle edit action
+                      },
+                      tooltip: 'Edit',
+                    ),
+                  ),
                 ),
-                textAlign: TextAlign.center,
-              ),
-            ),
-            // Chassis No
-            Expanded(
-              flex: 2,
-              child: Text(
-                lead.chassisNo,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: theme.colorScheme.onSurface,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ),
-            // Registration No
-            Expanded(
-              flex: 2,
-              child: Text(
-                lead.registrationNo,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: theme.colorScheme.onSurface,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ),
-            // Schedule Date
-            Expanded(
-              flex: 2,
-              child: Text(
-                DateFormat('dd/MM/yyyy').format(lead.scheduleDate),
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: theme.colorScheme.onSurface,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ),
-            // Lead Status
-            Expanded(
-              flex: 2,
-              child: Container(
-                alignment: Alignment.center,
-                child: _buildStatusBadge(lead.leadStatus, theme),
-              ),
-            ),
-            // Reschedule Count
-            Expanded(
-              flex: 1,
-              child: Text(
-                lead.rescheduledCount.toString(),
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: theme.colorScheme.onSurface,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ),
-            // Actions
-            Expanded(
-              flex: 1,
-              child: IconButton(
-                icon: const Icon(Icons.edit, size: 20),
-                onPressed: () {
-                  // Handle edit action
-                },
-                tooltip: 'Edit',
-              ),
-            ),
-          ],
-        ),
+        ],
       ),
     );
   }
@@ -539,7 +765,7 @@ class _ServiceLeadScreenState extends State<ServiceLeadScreen>
             ],
           ),
           Text(
-            '${_getStartIndex() + 1} of ${totalItems > 0 ? _getEndIndex() : 0}',
+            '${_getStartIndex() + 1} of $totalItems',
             style: TextStyle(
               fontSize: 14,
               color: theme.colorScheme.onSurface.withOpacity(0.7),
