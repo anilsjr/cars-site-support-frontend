@@ -7,6 +7,7 @@ class ServiceTicketModel extends ServiceTicket {
     required super.serviceTicketId,
     required super.serviceType,
     required super.chassis,
+    super.fleetDoorNo,
     super.estimateWorkHr,
     required super.campInDateTime,
     super.campExitDateTime,
@@ -23,6 +24,7 @@ class ServiceTicketModel extends ServiceTicket {
       serviceTicketId: json['serviceTicketId']?.toInt() ?? 0,
       serviceType: json['serviceType']?.toString() ?? '',
       chassis: json['chassis']?.toString() ?? '',
+      fleetDoorNo: json['fleetDoorNo']?.toInt(),
       estimateWorkHr: json['estimateWorkHr']?.toInt(),
       campInDateTime: DateTime.parse(
         json['campInDateTime'] ?? DateTime.now().toIso8601String(),
@@ -48,6 +50,7 @@ class ServiceTicketModel extends ServiceTicket {
       'serviceTicketId': serviceTicketId,
       'serviceType': serviceType,
       'chassis': chassis,
+      'fleetDoorNo': fleetDoorNo,
       'estimateWorkHr': estimateWorkHr,
       'campInDateTime': campInDateTime.toIso8601String(),
       'campExitDateTime': campExitDateTime?.toIso8601String(),

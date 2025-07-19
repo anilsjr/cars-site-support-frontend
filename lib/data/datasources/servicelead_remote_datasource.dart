@@ -62,6 +62,8 @@ class ServiceLeadRemoteDataSourceImpl implements ServiceLeadRemoteDataSource {
         queryParameters: queryParams,
       );
 
+      // print('Response data: ${response.data}');
+
       return ServiceLeadResponseModel.fromJson(response.data);
     } on DioException catch (e) {
       throw _handleDioException(e);

@@ -62,9 +62,11 @@ class ServiceTicketRemoteDataSourceImpl
 
       // Make the API call on correct endpoint
       final response = await _networkService.get(
-        '/api/ServiceTicket/',
+        '/api/serviceticket/',
         queryParameters: queryParams,
       );
+
+      print('Response data: ${response.data}');
 
       return ServiceTicketResponseModel.fromJson(response.data);
     } on DioException catch (e) {
@@ -77,7 +79,7 @@ class ServiceTicketRemoteDataSourceImpl
   @override
   Future<ServiceTicketModel> getServiceTicketById(String id) async {
     try {
-      final response = await _networkService.get('/api/ServiceTicket/$id');
+      final response = await _networkService.get('/api/serviceticket/$id');
 
       return ServiceTicketModel.fromJson(response.data['ServiceTicket']);
     } on DioException catch (e) {
@@ -93,7 +95,7 @@ class ServiceTicketRemoteDataSourceImpl
   ) async {
     try {
       final response = await _networkService.post(
-        '/api/ServiceTicket/create',
+        '/api/serviceticket/create',
         data: serviceTicket.toJson(),
       );
 
@@ -112,7 +114,7 @@ class ServiceTicketRemoteDataSourceImpl
   ) async {
     try {
       final response = await _networkService.put(
-        '/api/ServiceTicket/update/$id',
+        '/api/serviceticket/update/$id',
         data: serviceTicket.toJson(),
       );
 
@@ -127,7 +129,7 @@ class ServiceTicketRemoteDataSourceImpl
   @override
   Future<void> deleteServiceTicket(String id) async {
     try {
-      await _networkService.delete('/api/ServiceTicket/delete/$id');
+      await _networkService.delete('/api/serviceticket/delete/$id');
     } on DioException catch (e) {
       throw _handleDioException(e);
     } catch (e) {

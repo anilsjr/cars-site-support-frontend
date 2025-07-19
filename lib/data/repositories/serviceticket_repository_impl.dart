@@ -51,14 +51,15 @@ class ServiceTicketRepositoryImpl implements ServiceTicketRepository {
     try {
       final serviceTicketModel = ServiceTicketModel(
         id: serviceTicket.id,
-
         createdBy: serviceTicket.createdBy,
-
         serviceType: serviceTicket.serviceType,
         version: serviceTicket.version,
         serviceTicketId: serviceTicket.serviceTicketId,
         chassis: serviceTicket.chassis,
+        fleetDoorNo: serviceTicket.fleetDoorNo,
+        estimateWorkHr: serviceTicket.estimateWorkHr,
         campInDateTime: serviceTicket.campInDateTime,
+        campExitDateTime: serviceTicket.campExitDateTime,
         status: serviceTicket.status,
         createdOn: serviceTicket.createdOn,
         elapsedTime: serviceTicket.elapsedTime,
@@ -86,7 +87,10 @@ class ServiceTicketRepositoryImpl implements ServiceTicketRepository {
         version: serviceTicket.version,
         serviceTicketId: serviceTicket.serviceTicketId,
         chassis: serviceTicket.chassis,
+        fleetDoorNo: serviceTicket.fleetDoorNo,
+        estimateWorkHr: serviceTicket.estimateWorkHr,
         campInDateTime: serviceTicket.campInDateTime,
+        campExitDateTime: serviceTicket.campExitDateTime,
         status: serviceTicket.status,
         createdOn: serviceTicket.createdOn,
         elapsedTime: serviceTicket.elapsedTime,

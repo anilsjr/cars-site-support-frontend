@@ -127,15 +127,41 @@ class _ServiceLeadScreenState extends State<ServiceLeadScreen>
 
   Widget _buildTabFilters(ThemeData theme) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
+      width: 300, // Fixed width
+      margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+      height: 40, // Reduced height
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(8), // Reduced border radius
+        border: Border.all(color: theme.dividerColor.withOpacity(0.1)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 4, // Reduced blur
+            offset: const Offset(0, 1), // Reduced offset
+          ),
+        ],
+      ),
       child: Obx(
         () => TabBar(
           controller: _tabController,
-          labelColor: AppTheme.primaryMedium,
-          unselectedLabelColor: theme.colorScheme.onSurface.withOpacity(0.6),
-          indicatorColor: AppTheme.primaryMedium,
-          labelStyle: const TextStyle(fontWeight: FontWeight.w600),
-          unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w400),
+          labelColor: Colors.white,
+          unselectedLabelColor: theme.colorScheme.onSurface.withOpacity(0.7),
+          indicator: BoxDecoration(
+            color: AppTheme.primaryMedium,
+            borderRadius: BorderRadius.circular(6), // Reduced border radius
+          ),
+          indicatorSize: TabBarIndicatorSize.tab,
+          indicatorPadding: const EdgeInsets.all(3), // Reduced padding
+          labelStyle: const TextStyle(
+            fontWeight: FontWeight.w600,
+            fontSize: 11, // Reduced font size
+          ),
+          unselectedLabelStyle: const TextStyle(
+            fontWeight: FontWeight.w500,
+            fontSize: 11, // Reduced font size
+          ),
+          dividerColor: Colors.transparent,
           onTap: (index) {
             switch (index) {
               case 0:
@@ -162,8 +188,8 @@ class _ServiceLeadScreenState extends State<ServiceLeadScreen>
   Widget _buildSearchBar(ThemeData theme) {
     return Container(
       width: 500,
-      margin: const EdgeInsets.only(top: 16, bottom: 16),
-      padding: const EdgeInsets.all(24),
+      margin: const EdgeInsets.only(top: 4, bottom: 8),
+      padding: const EdgeInsets.all(10),
       child: Row(
         children: [
           Flexible(
@@ -775,7 +801,10 @@ class _ServiceLeadScreenState extends State<ServiceLeadScreen>
       final currentPage = _controller.currentPage.value;
 
       return Container(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.symmetric(
+          horizontal: 24,
+          vertical: 12,
+        ), // Reduced padding
         decoration: BoxDecoration(
           color: theme.colorScheme.surface,
           border: Border(
@@ -921,15 +950,32 @@ class _ServiceLeadScreenState extends State<ServiceLeadScreen>
                                 : '',
                           ),
                           onTap: () async {
+                            final DateTime maxDate =
+                                _controller.endDate.value != null
+                                ? (_controller.endDate.value!.isAfter(
+                                        DateTime(2023),
+                                      )
+                                      ? _controller.endDate.value!
+                                      : DateTime.now())
+                                : DateTime.now();
+
                             final date = await showDatePicker(
                               context: context,
                               initialDate:
-                                  _controller.startDate.value ?? DateTime.now(),
-                              firstDate: DateTime(2000),
-                              lastDate: DateTime(2030),
+                                  _controller.startDate.value ??
+                                  (DateTime(2023).isBefore(maxDate)
+                                      ? DateTime(2023)
+                                      : maxDate),
+                              firstDate: DateTime(2023),
+                              lastDate: maxDate,
                             );
                             if (date != null) {
                               _controller.startDate.value = date;
+                              // Reset end date if it's before the new start date
+                              if (_controller.endDate.value != null &&
+                                  _controller.endDate.value!.isBefore(date)) {
+                                _controller.endDate.value = null;
+                              }
                               _controller.loadServiceLeads();
                             }
                           },
@@ -954,12 +1000,23 @@ class _ServiceLeadScreenState extends State<ServiceLeadScreen>
                                 : '',
                           ),
                           onTap: () async {
+                            final DateTime minDate =
+                                _controller.startDate.value ??
+                                DateTime(2023, 1, 1);
+                            final DateTime initialDate =
+                                _controller.endDate.value != null
+                                ? (_controller.endDate.value!.isBefore(minDate)
+                                      ? minDate
+                                      : _controller.endDate.value!)
+                                : (minDate.isBefore(DateTime.now())
+                                      ? DateTime.now()
+                                      : minDate);
+
                             final date = await showDatePicker(
                               context: context,
-                              initialDate:
-                                  _controller.endDate.value ?? DateTime.now(),
-                              firstDate: DateTime(2000),
-                              lastDate: DateTime(2030),
+                              initialDate: initialDate,
+                              firstDate: minDate,
+                              lastDate: DateTime.now(),
                             );
                             if (date != null) {
                               _controller.endDate.value = date;

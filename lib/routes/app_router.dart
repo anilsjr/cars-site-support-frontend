@@ -8,6 +8,8 @@ import '../presentation/screens/dashboard/dashboard_screen.dart';
 import '../presentation/screens/dashboard/dashboard_content_pages.dart';
 import '../presentation/screens/servicelead/servicelead_screen.dart';
 import '../presentation/bindings/servicelead_binding.dart';
+import '../presentation/screens/serviceticket/serviceticket_screen.dart';
+import '../presentation/bindings/serviceticket_binding.dart';
 
 class AppRouter {
   static final GoRouter _router = GoRouter(
@@ -75,7 +77,11 @@ class AppRouter {
           GoRoute(
             path: '/service-ticket',
             name: 'service-ticket',
-            builder: (context, state) => const ServiceTicketContent(),
+            builder: (context, state) {
+              // Initialize service ticket dependencies
+              ServiceTicketBinding().dependencies();
+              return const ServiceTicketScreen();
+            },
           ),
           GoRoute(
             path: '/jobs-cards',

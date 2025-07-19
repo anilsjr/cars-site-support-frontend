@@ -3,6 +3,7 @@ class ServiceTicket {
   final int serviceTicketId;
   final String serviceType;
   final String chassis;
+  final int? fleetDoorNo;
   final int? estimateWorkHr;
   final DateTime campInDateTime;
   final DateTime? campExitDateTime;
@@ -17,6 +18,7 @@ class ServiceTicket {
     required this.serviceTicketId,
     required this.serviceType,
     required this.chassis,
+    this.fleetDoorNo,
     this.estimateWorkHr,
     required this.campInDateTime,
     this.campExitDateTime,
@@ -40,6 +42,6 @@ class ServiceTicket {
 
   @override
   String toString() {
-    return 'ServiceTicket{id: $id, serviceTicketId: $serviceTicketId, serviceType: $serviceType, chassis: $chassis, status: $status}';
+    return 'ServiceTicket{id: $id, serviceTicketId: $serviceTicketId, serviceType: $serviceType, chassis: $chassis, fleetDoorNo: $fleetDoorNo, status: $status}';
   }
 }
