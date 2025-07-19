@@ -111,19 +111,26 @@ class ServiceTicketResponseModel extends ServiceTicketResponse {
 class ServiceTicketCountModel extends ServiceTicketCount {
   const ServiceTicketCountModel({
     required super.all,
-    required super.annual,
+    required super.inprogress,
     required super.wgm,
+    required super.completed,
   });
 
   factory ServiceTicketCountModel.fromJson(Map<String, dynamic> json) {
     return ServiceTicketCountModel(
       all: json['all']?.toInt() ?? 0,
-      annual: json['annual']?.toInt() ?? 0,
+      inprogress: json['inprogress']?.toInt() ?? 0,
       wgm: json['wgm']?.toInt() ?? 0,
+      completed: json['completed']?.toInt() ?? 0,
     );
   }
 
   Map<String, dynamic> toJson() {
-    return {'all': all, 'annual': annual, 'wgm': wgm};
+    return {
+      'all': all,
+      'inprogress': inprogress,
+      'wgm': wgm,
+      'completed': completed,
+    };
   }
 }
