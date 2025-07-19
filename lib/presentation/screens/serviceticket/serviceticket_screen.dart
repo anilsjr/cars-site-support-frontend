@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -45,11 +44,9 @@ class _ServiceTicketScreenState extends State<ServiceTicketScreen>
 
   // Search change handler with debouncing
   void _onSearchChanged() {
-    if (kDebugMode) {
-      print(
-        'DEBUG: _onSearchChanged called with text: "${_searchController.text}"',
-      );
-    }
+    print(
+      'DEBUG: _onSearchChanged called with text: "${_searchController.text}"',
+    );
     _searchText.value = _searchController.text;
     _controller.searchServiceTickets(_searchController.text);
   }
@@ -79,7 +76,7 @@ class _ServiceTicketScreenState extends State<ServiceTicketScreen>
                 : SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: SizedBox(
-                      width: 1050, // Increased width to accommodate new columns
+                      width: 720, // Updated width for new columns
                       child: Column(
                         children: [
                           _buildTableHeader(theme),
@@ -97,7 +94,7 @@ class _ServiceTicketScreenState extends State<ServiceTicketScreen>
 
   Widget _buildHeader(ThemeData theme) {
     return Container(
-      padding: const EdgeInsets.all(8),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
         border: Border(
@@ -107,11 +104,11 @@ class _ServiceTicketScreenState extends State<ServiceTicketScreen>
       child: Row(
         children: [
           Icon(Icons.assignment, color: AppTheme.primaryMedium, size: 28),
-          const SizedBox(width: 20),
+          const SizedBox(width: 12),
           Text(
-            'My Service Tickets',
+            'Service Tickets',
             style: TextStyle(
-              fontSize: 20,
+              fontSize: 24,
               fontWeight: FontWeight.bold,
               color: theme.colorScheme.onSurface,
             ),
@@ -131,41 +128,15 @@ class _ServiceTicketScreenState extends State<ServiceTicketScreen>
 
   Widget _buildTabFilters(ThemeData theme) {
     return Container(
-      width: 350, // Fixed width
-      margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-      height: 40, // Reduced height
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(8), // Reduced border radius
-        border: Border.all(color: theme.dividerColor.withOpacity(0.1)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 4, // Reduced blur
-            offset: const Offset(0, 1), // Reduced offset
-          ),
-        ],
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Obx(
         () => TabBar(
           controller: _tabController,
-          labelColor: Colors.white,
-          unselectedLabelColor: theme.colorScheme.onSurface.withOpacity(0.7),
-          indicator: BoxDecoration(
-            color: AppTheme.primaryMedium,
-            borderRadius: BorderRadius.circular(6), // Reduced border radius
-          ),
-          indicatorSize: TabBarIndicatorSize.tab,
-          indicatorPadding: const EdgeInsets.all(3), // Reduced padding
-          labelStyle: const TextStyle(
-            fontWeight: FontWeight.w600,
-            fontSize: 11, // Reduced font size
-          ),
-          unselectedLabelStyle: const TextStyle(
-            fontWeight: FontWeight.w500,
-            fontSize: 11, // Reduced font size
-          ),
-          dividerColor: Colors.transparent,
+          labelColor: AppTheme.primaryMedium,
+          unselectedLabelColor: theme.colorScheme.onSurface.withOpacity(0.6),
+          indicatorColor: AppTheme.primaryMedium,
+          labelStyle: const TextStyle(fontWeight: FontWeight.w600),
+          unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w400),
           onTap: (index) {
             switch (index) {
               case 0:
@@ -180,9 +151,9 @@ class _ServiceTicketScreenState extends State<ServiceTicketScreen>
             }
           },
           tabs: [
-            Tab(text: 'Open (${_controller.totalCount.value})'),
+            Tab(text: 'All (${_controller.totalCount.value})'),
             Tab(text: 'In Progress (${_controller.inProgressCount.value})'),
-            Tab(text: 'Completed (${_controller.wgmCount.value})'),
+            Tab(text: 'WGM (${_controller.wgmCount.value})'),
           ],
         ),
       ),
@@ -191,35 +162,21 @@ class _ServiceTicketScreenState extends State<ServiceTicketScreen>
 
   Widget _buildSearchBar(ThemeData theme) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: theme.dividerColor.withOpacity(0.1)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
+      width: 500,
+      margin: const EdgeInsets.only(top: 16, bottom: 16),
+      padding: const EdgeInsets.all(24),
       child: Row(
         children: [
-          Expanded(
+          Flexible(
+            fit: FlexFit.tight,
             child: Obx(
               () => TextField(
                 controller: _searchController,
                 decoration: InputDecoration(
-                  hintText: 'Search by Chassis No./Boot No.',
-                  hintStyle: TextStyle(
-                    color: theme.colorScheme.onSurface.withOpacity(0.5),
-                    fontSize: 15,
-                  ),
+                  hintText: 'Search Service Ticket ID / Chassis',
                   prefixIcon: _controller.isLoading.value
                       ? Container(
-                          padding: const EdgeInsets.all(12),
+                          padding: const EdgeInsets.all(14),
                           child: SizedBox(
                             width: 20,
                             height: 20,
@@ -233,8 +190,7 @@ class _ServiceTicketScreenState extends State<ServiceTicketScreen>
                         )
                       : Icon(
                           Icons.search,
-                          color: AppTheme.primaryMedium,
-                          size: 20,
+                          color: theme.colorScheme.onSurface.withOpacity(0.6),
                         ),
                   suffixIcon: Obx(
                     () => _searchText.value.isNotEmpty
@@ -254,30 +210,21 @@ class _ServiceTicketScreenState extends State<ServiceTicketScreen>
                         : const SizedBox.shrink(),
                   ),
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: theme.dividerColor),
                   ),
                   enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: theme.dividerColor),
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(
-                      color: AppTheme.primaryMedium,
-                      width: 2,
-                    ),
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: AppTheme.primaryMedium),
                   ),
-                  filled: true,
-                  fillColor: theme.colorScheme.surface.withOpacity(0.3),
                   contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 20,
+                    horizontal: 16,
                     vertical: 12,
                   ),
-                ),
-                style: TextStyle(
-                  fontSize: 15,
-                  color: theme.colorScheme.onSurface,
                 ),
                 onChanged: (value) {
                   // Search is now handled by the listener
@@ -287,18 +234,14 @@ class _ServiceTicketScreenState extends State<ServiceTicketScreen>
             ),
           ),
           const SizedBox(width: 16),
-          Container(
-            decoration: BoxDecoration(
-              color: AppTheme.primaryMedium.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(10),
+          IconButton(
+            icon: Icon(
+              Icons.filter_list,
+              color: theme.colorScheme.onSurface.withOpacity(0.6),
             ),
-            child: IconButton(
-              icon: Icon(Icons.tune, color: AppTheme.primaryMedium, size: 22),
-              onPressed: () {
-                _showAdvancedFilters(context);
-              },
-              tooltip: 'Advanced Filters',
-            ),
+            onPressed: () {
+              _showAdvancedFilters(context);
+            },
           ),
         ],
       ),
@@ -310,14 +253,11 @@ class _ServiceTicketScreenState extends State<ServiceTicketScreen>
     final isWideScreen = screenWidth > 800;
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 24),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 16),
       decoration: BoxDecoration(
-        color: Colors.grey.shade50,
-        border: Border.all(color: theme.dividerColor.withOpacity(0.3)),
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(8),
-          topRight: Radius.circular(8),
+        color: theme.colorScheme.surface,
+        border: Border(
+          bottom: BorderSide(color: theme.dividerColor.withOpacity(0.2)),
         ),
       ),
       child: Row(
@@ -325,27 +265,31 @@ class _ServiceTicketScreenState extends State<ServiceTicketScreen>
           // Service Ticket ID Column
           isWideScreen
               ? Expanded(
-                  flex: 1,
-                  child: Text(
-                    'Service Ticket ID',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: theme.colorScheme.onSurface.withOpacity(0.7),
+                  flex: 2,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 16,
                     ),
-                    overflow: TextOverflow.ellipsis,
+                    child: Text(
+                      'Ticket ID',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: theme.colorScheme.onSurface.withOpacity(0.7),
+                      ),
+                    ),
                   ),
                 )
               : SizedBox(
                   width: 100,
                   child: Text(
-                    'Service Ticket ID',
+                    'Ticket ID',
                     style: TextStyle(
-                      fontSize: 12,
+                      fontSize: 14,
                       fontWeight: FontWeight.w600,
                       color: theme.colorScheme.onSurface.withOpacity(0.7),
                     ),
-                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
           // Service Type
@@ -377,9 +321,9 @@ class _ServiceTicketScreenState extends State<ServiceTicketScreen>
           // Chassis
           isWideScreen
               ? Expanded(
-                  flex: 2,
+                  flex: 3,
                   child: Text(
-                    'Chassis No',
+                    'Chassis',
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
@@ -391,7 +335,7 @@ class _ServiceTicketScreenState extends State<ServiceTicketScreen>
               : SizedBox(
                   width: 150,
                   child: Text(
-                    'Chassis No',
+                    'Chassis',
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
@@ -400,12 +344,12 @@ class _ServiceTicketScreenState extends State<ServiceTicketScreen>
                     textAlign: TextAlign.center,
                   ),
                 ),
-          // Fleet Door No
+          // Camp In Date
           isWideScreen
               ? Expanded(
-                  flex: 1,
+                  flex: 2,
                   child: Text(
-                    'Fleet/Door No',
+                    'Camp In Date',
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
@@ -417,7 +361,33 @@ class _ServiceTicketScreenState extends State<ServiceTicketScreen>
               : SizedBox(
                   width: 110,
                   child: Text(
-                    'Fleet/Door No',
+                    'Camp In Date',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: theme.colorScheme.onSurface.withOpacity(0.7),
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+          // Status
+          isWideScreen
+              ? Expanded(
+                  flex: 2,
+                  child: Text(
+                    'Status',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: theme.colorScheme.onSurface.withOpacity(0.7),
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                )
+              : SizedBox(
+                  width: 100,
+                  child: Text(
+                    'Status',
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
@@ -429,7 +399,7 @@ class _ServiceTicketScreenState extends State<ServiceTicketScreen>
           // Created By
           isWideScreen
               ? Expanded(
-                  flex: 1,
+                  flex: 2,
                   child: Text(
                     'Created By',
                     style: TextStyle(
@@ -452,90 +422,12 @@ class _ServiceTicketScreenState extends State<ServiceTicketScreen>
                     textAlign: TextAlign.center,
                   ),
                 ),
-          // Created On
-          isWideScreen
-              ? Expanded(
-                  flex: 1,
-                  child: Text(
-                    'Created On',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: theme.colorScheme.onSurface.withOpacity(0.7),
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                )
-              : SizedBox(
-                  width: 120,
-                  child: Text(
-                    'Created On',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: theme.colorScheme.onSurface.withOpacity(0.7),
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-          // Estimated Work Hrs
-          isWideScreen
-              ? Expanded(
-                  flex: 1,
-                  child: Text(
-                    'Estimated Work Hrs',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: theme.colorScheme.onSurface.withOpacity(0.7),
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                )
-              : SizedBox(
-                  width: 130,
-                  child: Text(
-                    'Estimated Work Hrs',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: theme.colorScheme.onSurface.withOpacity(0.7),
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-          // Elapsed Time
-          isWideScreen
-              ? Expanded(
-                  flex: 1,
-                  child: Text(
-                    'Elapsed Time',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: theme.colorScheme.onSurface.withOpacity(0.7),
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                )
-              : SizedBox(
-                  width: 110,
-                  child: Text(
-                    'Elapsed Time',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: theme.colorScheme.onSurface.withOpacity(0.7),
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
           // Actions
           isWideScreen
               ? Expanded(
                   flex: 1,
                   child: Text(
-                    'Action',
+                    'Actions',
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
@@ -545,9 +437,9 @@ class _ServiceTicketScreenState extends State<ServiceTicketScreen>
                   ),
                 )
               : SizedBox(
-                  width: 80,
+                  width: 70,
                   child: Text(
-                    'Action',
+                    'Actions',
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
@@ -588,289 +480,232 @@ class _ServiceTicketScreenState extends State<ServiceTicketScreen>
     final isWideScreen = screenWidth > 800;
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 0),
+      margin: const EdgeInsets.only(bottom: 1),
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
         border: Border(
-          left: BorderSide(color: theme.dividerColor.withOpacity(0.3)),
-          right: BorderSide(color: theme.dividerColor.withOpacity(0.3)),
-          bottom: BorderSide(color: theme.dividerColor.withOpacity(0.3)),
+          bottom: BorderSide(color: theme.dividerColor.withOpacity(0.1)),
         ),
       ),
-      child: IntrinsicHeight(
-        child: Row(
-          children: [
-            // Service Ticket ID Column
-            isWideScreen
-                ? Expanded(
-                    flex: 1,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
-                      child: Text(
-                        ticket.serviceTicketId.toString(),
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.blue.shade700,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
+      child: Row(
+        children: [
+          // Service Ticket ID Column
+          isWideScreen
+              ? Expanded(
+                  flex: 2,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 16,
                     ),
-                  )
-                : SizedBox(
-                    width: 100,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
-                      child: Text(
-                        ticket.serviceTicketId.toString(),
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.blue.shade700,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ),
-            // Service Type
-            isWideScreen
-                ? Expanded(
-                    flex: 1,
                     child: Text(
-                      ticket.serviceType,
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                        color: theme.colorScheme.onSurface,
-                      ),
-                      textAlign: TextAlign.center,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  )
-                : SizedBox(
-                    width: 80,
-                    child: Text(
-                      ticket.serviceType,
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                        color: theme.colorScheme.onSurface,
-                      ),
-                      textAlign: TextAlign.center,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-            // Chassis
-            isWideScreen
-                ? Expanded(
-                    flex: 2,
-                    child: Text(
-                      ticket.chassis,
+                      ticket.serviceTicketId.toString(),
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
                         color: theme.colorScheme.onSurface,
                       ),
-                      textAlign: TextAlign.center,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  )
-                : SizedBox(
-                    width: 150,
-                    child: Text(
-                      ticket.chassis,
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: theme.colorScheme.onSurface,
-                      ),
-                      textAlign: TextAlign.center,
-                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
-            // Fleet Door No
-            isWideScreen
-                ? Expanded(
-                    flex: 1,
-                    child: Text(
-                      ticket.fleetDoorNo?.toString() ?? 'N/A',
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                        color: theme.colorScheme.onSurface,
-                      ),
-                      textAlign: TextAlign.center,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  )
-                : SizedBox(
-                    width: 110,
-                    child: Text(
-                      ticket.fleetDoorNo?.toString() ?? 'N/A',
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                        color: theme.colorScheme.onSurface,
-                      ),
-                      textAlign: TextAlign.center,
-                      overflow: TextOverflow.ellipsis,
+                )
+              : SizedBox(
+                  width: 100,
+                  child: Text(
+                    ticket.serviceTicketId.toString(),
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: theme.colorScheme.onSurface,
                     ),
                   ),
-            // Created By
-            isWideScreen
-                ? Expanded(
-                    flex: 1,
-                    child: Text(
-                      ticket.createdBy,
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                        color: theme.colorScheme.onSurface,
-                      ),
-                      textAlign: TextAlign.center,
-                      overflow: TextOverflow.ellipsis,
+                ),
+          // Service Type
+          isWideScreen
+              ? Expanded(
+                  flex: 1,
+                  child: Text(
+                    ticket.serviceType,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: theme.colorScheme.onSurface,
                     ),
-                  )
-                : SizedBox(
-                    width: 100,
-                    child: Text(
-                      ticket.createdBy,
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                        color: theme.colorScheme.onSurface,
-                      ),
-                      textAlign: TextAlign.center,
-                      overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                  ),
+                )
+              : SizedBox(
+                  width: 80,
+                  child: Text(
+                    ticket.serviceType,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: theme.colorScheme.onSurface,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+          // Chassis
+          isWideScreen
+              ? Expanded(
+                  flex: 3,
+                  child: Text(
+                    ticket.chassis,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: theme.colorScheme.onSurface,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                )
+              : SizedBox(
+                  width: 150,
+                  child: Text(
+                    ticket.chassis,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: theme.colorScheme.onSurface,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+          // Camp In Date
+          isWideScreen
+              ? Expanded(
+                  flex: 2,
+                  child: Text(
+                    DateFormat('dd/MM/yy').format(ticket.campInDateTime),
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: theme.colorScheme.onSurface,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                )
+              : SizedBox(
+                  width: 110,
+                  child: Text(
+                    DateFormat('dd/MM/yy').format(ticket.campInDateTime),
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: theme.colorScheme.onSurface,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+          // Status
+          isWideScreen
+              ? Expanded(
+                  flex: 2,
+                  child: Container(
+                    alignment: Alignment.center,
+                    child: _buildStatusBadge(ticket.status, theme),
+                  ),
+                )
+              : SizedBox(
+                  width: 100,
+                  child: Container(
+                    alignment: Alignment.center,
+                    child: _buildStatusBadge(ticket.status, theme),
+                  ),
+                ),
+          // Created By
+          isWideScreen
+              ? Expanded(
+                  flex: 2,
+                  child: Text(
+                    ticket.createdBy,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: theme.colorScheme.onSurface,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                )
+              : SizedBox(
+                  width: 100,
+                  child: Text(
+                    ticket.createdBy,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: theme.colorScheme.onSurface,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+          // Actions
+          isWideScreen
+              ? Expanded(
+                  flex: 1,
+                  child: Container(
+                    alignment: Alignment.center,
+                    child: IconButton(
+                      icon: const Icon(Icons.edit, size: 18),
+                      onPressed: () {
+                        // Handle edit action
+                      },
+                      tooltip: 'Edit',
                     ),
                   ),
-            // Created On
-            isWideScreen
-                ? Expanded(
-                    flex: 1,
-                    child: Text(
-                      ticket.createdOn.toString(),
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                        color: theme.colorScheme.onSurface.withOpacity(0.8),
-                      ),
-                      textAlign: TextAlign.center,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  )
-                : SizedBox(
-                    width: 120,
-                    child: Text(
-                      ticket.createdOn.toString(),
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                        color: theme.colorScheme.onSurface.withOpacity(0.8),
-                      ),
-                      textAlign: TextAlign.center,
-                      overflow: TextOverflow.ellipsis,
+                )
+              : SizedBox(
+                  width: 70,
+                  child: Container(
+                    alignment: Alignment.center,
+                    child: IconButton(
+                      icon: const Icon(Icons.edit, size: 18),
+                      onPressed: () {
+                        // Handle edit action
+                      },
+                      tooltip: 'Edit',
                     ),
                   ),
-            // Estimated Work Hrs
-            isWideScreen
-                ? Expanded(
-                    flex: 1,
-                    child: Text(
-                      '-', // Placeholder for estimated work hours
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                        color: theme.colorScheme.onSurface.withOpacity(0.8),
-                      ),
-                      textAlign: TextAlign.center,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  )
-                : SizedBox(
-                    width: 130,
-                    child: Text(
-                      '-', // Placeholder for estimated work hours
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                        color: theme.colorScheme.onSurface.withOpacity(0.8),
-                      ),
-                      textAlign: TextAlign.center,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-            // Elapsed Time
-            isWideScreen
-                ? Expanded(
-                    flex: 1,
-                    child: Text(
-                      '-', // Placeholder for elapsed time
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                        color: theme.colorScheme.onSurface.withOpacity(0.8),
-                      ),
-                      textAlign: TextAlign.center,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  )
-                : SizedBox(
-                    width: 110,
-                    child: Text(
-                      '-', // Placeholder for elapsed time
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                        color: theme.colorScheme.onSurface.withOpacity(0.8),
-                      ),
-                      textAlign: TextAlign.center,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-            // Actions
-            isWideScreen
-                ? Expanded(
-                    flex: 1,
-                    child: Container(
-                      alignment: Alignment.center,
-                      child: IconButton(
-                        icon: Icon(
-                          Icons.visibility,
-                          size: 18,
-                          color: Colors.blue.shade700,
-                        ),
-                        onPressed: () {
-                          // Handle view action
-                        },
-                        tooltip: 'View',
-                      ),
-                    ),
-                  )
-                : SizedBox(
-                    width: 80,
-                    child: Container(
-                      alignment: Alignment.center,
-                      child: IconButton(
-                        icon: Icon(
-                          Icons.visibility,
-                          size: 18,
-                          color: Colors.blue.shade700,
-                        ),
-                        onPressed: () {
-                          // Handle view action
-                        },
-                        tooltip: 'View',
-                      ),
-                    ),
-                  ),
-          ],
+                ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatusBadge(String status, ThemeData theme) {
+    Color backgroundColor;
+    Color textColor;
+
+    switch (status.toLowerCase()) {
+      case 'inprogress':
+        backgroundColor = Colors.orange.withOpacity(0.2);
+        textColor = Colors.orange.shade700;
+        break;
+      case 'completed':
+        backgroundColor = Colors.green.withOpacity(0.2);
+        textColor = Colors.green.shade700;
+        break;
+      case 'pending':
+        backgroundColor = Colors.grey.withOpacity(0.2);
+        textColor = Colors.grey.shade700;
+        break;
+      default:
+        backgroundColor = theme.colorScheme.surface;
+        textColor = theme.colorScheme.onSurface;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Text(
+        status,
+        style: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w500,
+          color: textColor,
         ),
       ),
     );
@@ -883,10 +718,7 @@ class _ServiceTicketScreenState extends State<ServiceTicketScreen>
       final currentPage = _controller.currentPage.value;
 
       return Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 24,
-          vertical: 12,
-        ), // Reduced padding
+        padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
           color: theme.colorScheme.surface,
           border: Border(
@@ -1032,32 +864,15 @@ class _ServiceTicketScreenState extends State<ServiceTicketScreen>
                                 : '',
                           ),
                           onTap: () async {
-                            final DateTime maxDate =
-                                _controller.endDate.value != null
-                                ? (_controller.endDate.value!.isAfter(
-                                        DateTime(2023),
-                                      )
-                                      ? _controller.endDate.value!
-                                      : DateTime.now())
-                                : DateTime.now();
-
                             final date = await showDatePicker(
                               context: context,
                               initialDate:
-                                  _controller.startDate.value ??
-                                  (DateTime(2023).isBefore(maxDate)
-                                      ? DateTime(2023)
-                                      : maxDate),
-                              firstDate: DateTime(2023),
-                              lastDate: maxDate,
+                                  _controller.startDate.value ?? DateTime.now(),
+                              firstDate: DateTime(2000),
+                              lastDate: DateTime(2030),
                             );
                             if (date != null) {
                               _controller.startDate.value = date;
-                              // Reset end date if it's before the new start date
-                              if (_controller.endDate.value != null &&
-                                  _controller.endDate.value!.isBefore(date)) {
-                                _controller.endDate.value = null;
-                              }
                               _controller.loadServiceTickets();
                             }
                           },
@@ -1082,23 +897,12 @@ class _ServiceTicketScreenState extends State<ServiceTicketScreen>
                                 : '',
                           ),
                           onTap: () async {
-                            final DateTime minDate =
-                                _controller.startDate.value ??
-                                DateTime(2023, 1, 1);
-                            final DateTime initialDate =
-                                _controller.endDate.value != null
-                                ? (_controller.endDate.value!.isBefore(minDate)
-                                      ? minDate
-                                      : _controller.endDate.value!)
-                                : (minDate.isBefore(DateTime.now())
-                                      ? DateTime.now()
-                                      : minDate);
-
                             final date = await showDatePicker(
                               context: context,
-                              initialDate: initialDate,
-                              firstDate: minDate,
-                              lastDate: DateTime.now(),
+                              initialDate:
+                                  _controller.endDate.value ?? DateTime.now(),
+                              firstDate: DateTime(2000),
+                              lastDate: DateTime(2030),
                             );
                             if (date != null) {
                               _controller.endDate.value = date;
