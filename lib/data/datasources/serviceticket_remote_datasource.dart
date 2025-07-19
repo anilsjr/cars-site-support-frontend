@@ -15,11 +15,11 @@ abstract class ServiceTicketRemoteDataSource {
 
   Future<ServiceTicketModel> getServiceTicketById(String id);
   Future<ServiceTicketModel> createServiceTicket(
-    ServiceTicketModel ServiceTicket,
+    ServiceTicketModel serviceTicket,
   );
   Future<ServiceTicketModel> updateServiceTicket(
     String id,
-    ServiceTicketModel ServiceTicket,
+    ServiceTicketModel serviceTicket,
   );
   Future<void> deleteServiceTicket(String id);
 }
@@ -60,8 +60,9 @@ class ServiceTicketRemoteDataSourceImpl
         queryParams['endDate'] = endDate.toIso8601String();
       }
 
+      // Make the API call on correct endpoint
       final response = await _networkService.get(
-        '/api/ServiceTicket/view',
+        '/api/ServiceTicket/',
         queryParameters: queryParams,
       );
 
@@ -76,7 +77,7 @@ class ServiceTicketRemoteDataSourceImpl
   @override
   Future<ServiceTicketModel> getServiceTicketById(String id) async {
     try {
-      final response = await _networkService.get('/api/ServiceTicket/view/$id');
+      final response = await _networkService.get('/api/ServiceTicket/$id');
 
       return ServiceTicketModel.fromJson(response.data['ServiceTicket']);
     } on DioException catch (e) {
@@ -88,12 +89,12 @@ class ServiceTicketRemoteDataSourceImpl
 
   @override
   Future<ServiceTicketModel> createServiceTicket(
-    ServiceTicketModel ServiceTicket,
+    ServiceTicketModel serviceTicket,
   ) async {
     try {
       final response = await _networkService.post(
         '/api/ServiceTicket/create',
-        data: ServiceTicket.toJson(),
+        data: serviceTicket.toJson(),
       );
 
       return ServiceTicketModel.fromJson(response.data['ServiceTicket']);
@@ -107,12 +108,12 @@ class ServiceTicketRemoteDataSourceImpl
   @override
   Future<ServiceTicketModel> updateServiceTicket(
     String id,
-    ServiceTicketModel ServiceTicket,
+    ServiceTicketModel serviceTicket,
   ) async {
     try {
       final response = await _networkService.put(
         '/api/ServiceTicket/update/$id',
-        data: ServiceTicket.toJson(),
+        data: serviceTicket.toJson(),
       );
 
       return ServiceTicketModel.fromJson(response.data['ServiceTicket']);

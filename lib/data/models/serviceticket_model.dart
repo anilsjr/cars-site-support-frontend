@@ -97,7 +97,9 @@ class ServiceTicketResponseModel extends ServiceTicketResponse {
       'status_code': statusCode,
       'status_message': statusMessage,
       'serviceTicketData': serviceTicketData
-          .map((serviceTicket) => (serviceTicket as ServiceTicketModel).toJson())
+          .map(
+            (serviceTicket) => (serviceTicket as ServiceTicketModel).toJson(),
+          )
           .toList(),
       'totalItems': totalItems,
       'totalPages': totalPages,
