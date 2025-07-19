@@ -829,14 +829,20 @@ class _ServiceTicketScreenState extends State<ServiceTicketScreen>
                       labelText: 'Status',
                       border: OutlineInputBorder(),
                     ),
-                    items: ['Pending', 'In Progress', 'Completed']
-                        .map(
-                          (status) => DropdownMenuItem(
-                            value: status,
-                            child: Text(status),
-                          ),
-                        )
-                        .toList(),
+                    items: [
+                      DropdownMenuItem(
+                        value: 'pending',
+                        child: Text('Pending'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'inprogress',
+                        child: Text('In Progress'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'completed',
+                        child: Text('Completed'),
+                      ),
+                    ],
                     onChanged: (value) {
                       _controller.filterByStatus(value ?? '');
                     },

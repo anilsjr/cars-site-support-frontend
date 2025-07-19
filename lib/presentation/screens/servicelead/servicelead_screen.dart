@@ -915,14 +915,24 @@ class _ServiceLeadScreenState extends State<ServiceLeadScreen>
                       labelText: 'Lead Status',
                       border: OutlineInputBorder(),
                     ),
-                    items: ['Pending', 'In Progress', 'Completed', 'Cancelled']
-                        .map(
-                          (status) => DropdownMenuItem(
-                            value: status,
-                            child: Text(status),
-                          ),
-                        )
-                        .toList(),
+                    items: [
+                      DropdownMenuItem(
+                        value: 'pending',
+                        child: Text('Pending'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'in progress',
+                        child: Text('In Progress'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'completed',
+                        child: Text('Completed'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'cancelled',
+                        child: Text('Cancelled'),
+                      ),
+                    ],
                     onChanged: (value) {
                       _controller.filterByStatus(value ?? '');
                     },
