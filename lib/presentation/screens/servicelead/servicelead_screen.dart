@@ -4,7 +4,6 @@ import 'package:intl/intl.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../domain/entities/servicelead.dart';
 import '../../controllers/servicelead_controller.dart';
-import '../../bindings/servicelead_binding.dart';
 
 class ServiceLeadScreen extends StatefulWidget {
   const ServiceLeadScreen({super.key});
@@ -18,25 +17,37 @@ class _ServiceLeadScreenState extends State<ServiceLeadScreen>
   late ServiceLeadController _controller = Get.find<ServiceLeadController>();
   final TextEditingController _searchController = TextEditingController();
   late TabController _tabController;
-  String _selectedTab = 'All';
-  int _rowsPerPage = 10;
-  int _currentPage = 1;
+
+  // Add reactive variable for search text
+  final RxString _searchText = ''.obs;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
     // Initialize service lead dependencies first
-    ServiceLeadBinding().dependencies();
     _controller = Get.find<ServiceLeadController>();
     _controller.loadServiceLeads();
+
+    // Listen to search text changes
+    _searchController.addListener(_onSearchChanged);
   }
 
   @override
   void dispose() {
+    _searchController.removeListener(_onSearchChanged);
     _searchController.dispose();
     _tabController.dispose();
     super.dispose();
+  }
+
+  // Search change handler with debouncing
+  void _onSearchChanged() {
+    print(
+      'DEBUG: _onSearchChanged called with text: "${_searchController.text}"',
+    );
+    _searchText.value = _searchController.text;
+    _controller.searchServiceLeads(_searchController.text);
   }
 
   @override
@@ -102,6 +113,12 @@ class _ServiceLeadScreenState extends State<ServiceLeadScreen>
             ),
           ),
           const Spacer(),
+          // Refresh button
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: _refreshData,
+            tooltip: 'Refresh',
+          ),
           // User profile section can be added here if needed
         ],
       ),
@@ -120,20 +137,17 @@ class _ServiceLeadScreenState extends State<ServiceLeadScreen>
           labelStyle: const TextStyle(fontWeight: FontWeight.w600),
           unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w400),
           onTap: (index) {
-            setState(() {
-              switch (index) {
-                case 0:
-                  _selectedTab = 'All';
-                  break;
-                case 1:
-                  _selectedTab = 'Annual';
-                  break;
-                case 2:
-                  _selectedTab = 'WGM';
-                  break;
-              }
-            });
-            _filterServiceLeads();
+            switch (index) {
+              case 0:
+                _controller.filterByServiceType('');
+                break;
+              case 1:
+                _controller.filterByServiceType('annual');
+                break;
+              case 2:
+                _controller.filterByServiceType('wgm');
+                break;
+            }
           },
           tabs: [
             Tab(text: 'All (${_controller.totalCount.value})'),
@@ -154,35 +168,68 @@ class _ServiceLeadScreenState extends State<ServiceLeadScreen>
         children: [
           Flexible(
             fit: FlexFit.tight,
-            child: TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
-                hintText: 'Search Chassis / Fleet No (Door No)',
-                prefixIcon: Icon(
-                  Icons.search,
-                  color: theme.colorScheme.onSurface.withOpacity(0.6),
+            child: Obx(
+              () => TextField(
+                controller: _searchController,
+                decoration: InputDecoration(
+                  hintText: 'Search Chassis / Fleet No (Door No)',
+                  prefixIcon: _controller.isLoading.value
+                      ? Container(
+                          padding: const EdgeInsets.all(14),
+                          child: SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                AppTheme.primaryMedium,
+                              ),
+                            ),
+                          ),
+                        )
+                      : Icon(
+                          Icons.search,
+                          color: theme.colorScheme.onSurface.withOpacity(0.6),
+                        ),
+                  suffixIcon: Obx(
+                    () => _searchText.value.isNotEmpty
+                        ? IconButton(
+                            icon: Icon(
+                              Icons.clear,
+                              color: theme.colorScheme.onSurface.withOpacity(
+                                0.6,
+                              ),
+                            ),
+                            onPressed: () {
+                              _searchController.clear();
+                              _searchText.value = '';
+                              _controller.searchServiceLeads('');
+                            },
+                          )
+                        : const SizedBox.shrink(),
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: theme.dividerColor),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: theme.dividerColor),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: AppTheme.primaryMedium),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                 ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: theme.dividerColor),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: theme.dividerColor),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: AppTheme.primaryMedium),
-                ),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
+                onChanged: (value) {
+                  // Search is now handled by the listener
+                  // The controller's debounced search will be triggered automatically
+                },
               ),
-              onChanged: (value) {
-                // Implement search functionality
-                _filterServiceLeads();
-              },
             ),
           ),
           const SizedBox(width: 16),
@@ -192,7 +239,7 @@ class _ServiceLeadScreenState extends State<ServiceLeadScreen>
               color: theme.colorScheme.onSurface.withOpacity(0.6),
             ),
             onPressed: () {
-              // Implement filter functionality
+              _showAdvancedFilters(context);
             },
           ),
         ],
@@ -435,7 +482,7 @@ class _ServiceLeadScreenState extends State<ServiceLeadScreen>
     return Obx(
       () => _controller.isLoading.value
           ? const Center(child: CircularProgressIndicator())
-          : _getFilteredServiceLeads().isEmpty
+          : _controller.serviceLeads.isEmpty
           ? const Center(
               child: Text(
                 'No service leads found',
@@ -444,9 +491,9 @@ class _ServiceLeadScreenState extends State<ServiceLeadScreen>
             )
           : ListView.builder(
               padding: const EdgeInsets.symmetric(horizontal: 0),
-              itemCount: _getPaginatedServiceLeads().length,
+              itemCount: _controller.serviceLeads.length,
               itemBuilder: (context, index) {
-                final lead = _getPaginatedServiceLeads()[index];
+                final lead = _controller.serviceLeads[index];
                 return _buildServiceLeadCard(lead, theme);
               },
             ),
@@ -722,143 +769,235 @@ class _ServiceLeadScreenState extends State<ServiceLeadScreen>
   }
 
   Widget _buildPagination(ThemeData theme) {
-    final totalItems = _getFilteredServiceLeads().length;
-    final totalPages = (totalItems / _rowsPerPage).ceil();
+    return Obx(() {
+      final totalItems = _controller.totalItems.value;
+      final totalPages = _controller.totalPages.value;
+      final currentPage = _controller.currentPage.value;
 
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        border: Border(
-          top: BorderSide(color: theme.dividerColor.withOpacity(0.2)),
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            children: [
-              Text(
-                'Rows per page:',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: theme.colorScheme.onSurface.withOpacity(0.7),
-                ),
-              ),
-              const SizedBox(width: 8),
-              DropdownButton<int>(
-                value: _rowsPerPage,
-                items: [5, 10, 25, 50].map((int value) {
-                  return DropdownMenuItem<int>(
-                    value: value,
-                    child: Text(value.toString()),
-                  );
-                }).toList(),
-                onChanged: (int? newValue) {
-                  setState(() {
-                    _rowsPerPage = newValue ?? 10;
-                    _currentPage = 1;
-                  });
-                },
-                underline: Container(),
-              ),
-            ],
+      return Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surface,
+          border: Border(
+            top: BorderSide(color: theme.dividerColor.withOpacity(0.2)),
           ),
-          Text(
-            '${_getStartIndex() + 1} of $totalItems',
-            style: TextStyle(
-              fontSize: 14,
-              color: theme.colorScheme.onSurface.withOpacity(0.7),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                Text(
+                  'Rows per page:',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: theme.colorScheme.onSurface.withOpacity(0.7),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                DropdownButton<int>(
+                  value: _controller.limit.value,
+                  items: [5, 10, 25, 50].map((int value) {
+                    return DropdownMenuItem<int>(
+                      value: value,
+                      child: Text(value.toString()),
+                    );
+                  }).toList(),
+                  onChanged: (int? newValue) {
+                    if (newValue != null) {
+                      _controller.limit.value = newValue;
+                      _controller.currentPage.value = 1;
+                      _controller.loadServiceLeads();
+                    }
+                  },
+                  underline: Container(),
+                ),
+              ],
+            ),
+            Text(
+              '${_getStartIndex(currentPage, _controller.limit.value) + 1} - ${_getEndIndex(currentPage, _controller.limit.value, totalItems)} of $totalItems',
+              style: TextStyle(
+                fontSize: 14,
+                color: theme.colorScheme.onSurface.withOpacity(0.7),
+              ),
+            ),
+            Row(
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.chevron_left),
+                  onPressed: currentPage > 1
+                      ? () {
+                          _controller.currentPage.value = currentPage - 1;
+                          _controller.loadServiceLeads();
+                        }
+                      : null,
+                ),
+                Text(
+                  '$currentPage of $totalPages',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: theme.colorScheme.onSurface.withOpacity(0.7),
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.chevron_right),
+                  onPressed: currentPage < totalPages
+                      ? () {
+                          _controller.currentPage.value = currentPage + 1;
+                          _controller.loadServiceLeads();
+                        }
+                      : null,
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+    });
+  }
+
+  // Helper methods for pagination display
+  int _getStartIndex(int currentPage, int limit) => (currentPage - 1) * limit;
+
+  int _getEndIndex(int currentPage, int limit, int totalItems) {
+    final endIndex = currentPage * limit;
+    return endIndex > totalItems ? totalItems : endIndex;
+  }
+
+  // Advanced filters dialog
+  void _showAdvancedFilters(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Advanced Filters'),
+          content: SizedBox(
+            width: 400,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Status Filter
+                Obx(
+                  () => DropdownButtonFormField<String>(
+                    value: _controller.selectedStatus.value.isEmpty
+                        ? null
+                        : _controller.selectedStatus.value,
+                    decoration: const InputDecoration(
+                      labelText: 'Lead Status',
+                      border: OutlineInputBorder(),
+                    ),
+                    items: ['Pending', 'In Progress', 'Completed', 'Cancelled']
+                        .map(
+                          (status) => DropdownMenuItem(
+                            value: status,
+                            child: Text(status),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: (value) {
+                      _controller.filterByStatus(value ?? '');
+                    },
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // Date Range Filter
+                Row(
+                  children: [
+                    Expanded(
+                      child: Obx(
+                        () => TextFormField(
+                          decoration: const InputDecoration(
+                            labelText: 'Start Date',
+                            border: OutlineInputBorder(),
+                            suffixIcon: Icon(Icons.calendar_today),
+                          ),
+                          readOnly: true,
+                          controller: TextEditingController(
+                            text: _controller.startDate.value != null
+                                ? DateFormat(
+                                    'dd/MM/yyyy',
+                                  ).format(_controller.startDate.value!)
+                                : '',
+                          ),
+                          onTap: () async {
+                            final date = await showDatePicker(
+                              context: context,
+                              initialDate:
+                                  _controller.startDate.value ?? DateTime.now(),
+                              firstDate: DateTime(2000),
+                              lastDate: DateTime(2030),
+                            );
+                            if (date != null) {
+                              _controller.startDate.value = date;
+                              _controller.loadServiceLeads();
+                            }
+                          },
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Obx(
+                        () => TextFormField(
+                          decoration: const InputDecoration(
+                            labelText: 'End Date',
+                            border: OutlineInputBorder(),
+                            suffixIcon: Icon(Icons.calendar_today),
+                          ),
+                          readOnly: true,
+                          controller: TextEditingController(
+                            text: _controller.endDate.value != null
+                                ? DateFormat(
+                                    'dd/MM/yyyy',
+                                  ).format(_controller.endDate.value!)
+                                : '',
+                          ),
+                          onTap: () async {
+                            final date = await showDatePicker(
+                              context: context,
+                              initialDate:
+                                  _controller.endDate.value ?? DateTime.now(),
+                              firstDate: DateTime(2000),
+                              lastDate: DateTime(2030),
+                            );
+                            if (date != null) {
+                              _controller.endDate.value = date;
+                              _controller.loadServiceLeads();
+                            }
+                          },
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
-          Row(
-            children: [
-              IconButton(
-                icon: const Icon(Icons.chevron_left),
-                onPressed: _currentPage > 1
-                    ? () {
-                        setState(() {
-                          _currentPage--;
-                        });
-                      }
-                    : null,
-              ),
-              Text(
-                '$_currentPage of $totalPages',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: theme.colorScheme.onSurface.withOpacity(0.7),
-                ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.chevron_right),
-                onPressed: _currentPage < totalPages
-                    ? () {
-                        setState(() {
-                          _currentPage++;
-                        });
-                      }
-                    : null,
-              ),
-            ],
-          ),
-        ],
-      ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                // Clear all filters
+                _controller.selectedStatus.value = '';
+                _controller.startDate.value = null;
+                _controller.endDate.value = null;
+                _controller.loadServiceLeads();
+                Navigator.of(context).pop();
+              },
+              child: const Text('Clear All'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Close'),
+            ),
+          ],
+        );
+      },
     );
   }
 
-  // Helper methods
-  List<ServiceLead> _getFilteredServiceLeads() {
-    List<ServiceLead> filtered = _controller.serviceLeads.toList();
-
-    // Filter by tab selection
-    if (_selectedTab == 'Annual') {
-      filtered = filtered
-          .where((lead) => lead.serviceType.toLowerCase().contains('annual'))
-          .toList();
-    } else if (_selectedTab == 'WGM') {
-      filtered = filtered
-          .where((lead) => lead.serviceType.toLowerCase().contains('wgm'))
-          .toList();
-    }
-
-    // Filter by search query
-    final query = _searchController.text.toLowerCase();
-    if (query.isNotEmpty) {
-      filtered = filtered
-          .where(
-            (lead) =>
-                lead.chassisNo.toLowerCase().contains(query) ||
-                lead.doorNo.toLowerCase().contains(query) ||
-                lead.registrationNo.toLowerCase().contains(query) ||
-                lead.modelNo.toLowerCase().contains(query),
-          )
-          .toList();
-    }
-
-    return filtered;
-  }
-
-  List<ServiceLead> _getPaginatedServiceLeads() {
-    final filtered = _getFilteredServiceLeads();
-    final startIndex = _getStartIndex();
-    final endIndex = _getEndIndex();
-
-    if (startIndex >= filtered.length) return [];
-
-    return filtered.sublist(
-      startIndex,
-      endIndex > filtered.length ? filtered.length : endIndex,
-    );
-  }
-
-  int _getStartIndex() => (_currentPage - 1) * _rowsPerPage;
-
-  int _getEndIndex() => _currentPage * _rowsPerPage;
-
-  void _filterServiceLeads() {
-    setState(() {
-      _currentPage = 1; // Reset to first page when filtering
-    });
+  // Add refresh functionality
+  void _refreshData() {
+    _controller.refreshServiceLeads();
   }
 }

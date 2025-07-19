@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
-import 'package:universal_html/html.dart';
+// import 'package:universal_html/html.dart';
 import 'package:vehicle_site_support_web/core/constants/app_constants.dart'
-    show AppConstants, appName;
+    show AppConstants;
 
 import '../../domain/entities/user.dart';
 import '../../domain/repositories/user_repository.dart';

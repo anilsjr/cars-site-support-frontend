@@ -32,22 +32,22 @@ class PermissionModel extends Permission {
     };
   }
 
-  PermissionModel copyWith({
-    int? roleId,
-    int? permissionsId,
-    String? permissionSubcategoryName,
-    String? permissionSubcategoryKey,
-    String? permissionCategoryName,
-  }) {
-    return PermissionModel(
-      roleId: roleId ?? this.roleId,
-      permissionsId: permissionsId ?? this.permissionsId,
-      permissionSubcategoryName:
-          permissionSubcategoryName ?? this.permissionSubcategoryName,
-      permissionSubcategoryKey:
-          permissionSubcategoryKey ?? this.permissionSubcategoryKey,
-      permissionCategoryName:
-          permissionCategoryName ?? this.permissionCategoryName,
-    );
-  }
+  // PermissionModel copyWith({
+  //   int? roleId,
+  //   int? permissionsId,
+  //   String? permissionSubcategoryName,
+  //   String? permissionSubcategoryKey,
+  //   String? permissionCategoryName,
+  // }) {
+  //   return PermissionModel(
+  //     roleId: roleId ?? this.roleId,
+  //     permissionsId: permissionsId ?? this.permissionsId,
+  //     permissionSubcategoryName:
+  //         permissionSubcategoryName ?? this.permissionSubcategoryName,
+  //     permissionSubcategoryKey:
+  //         permissionSubcategoryKey ?? this.permissionSubcategoryKey,
+  //     permissionCategoryName:
+  //         permissionCategoryName ?? this.permissionCategoryName,
+  //   );
+  // }
 }

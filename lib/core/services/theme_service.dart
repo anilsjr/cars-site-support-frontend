@@ -32,6 +32,11 @@ class ThemeService extends GetxController {
         default:
           _themeMode.value = ThemeMode.system;
       }
+    } else {
+      // Set default theme to light when no saved theme is found
+      _themeMode.value = ThemeMode.light;
+      // Save the default theme to localStorage
+      StorageService.setLocalStorage(AppConstants.themeKey, 'light');
     }
   }
 

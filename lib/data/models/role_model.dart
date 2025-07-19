@@ -14,7 +14,7 @@ class RoleModel extends Role {
     return {'id': id, 'role_name': roleName};
   }
 
-  RoleModel copyWith({int? id, String? roleName}) {
-    return RoleModel(id: id ?? this.id, roleName: roleName ?? this.roleName);
-  }
+  // RoleModel copyWith({int? id, String? roleName}) {
+  //   return RoleModel(id: id ?? this.id, roleName: roleName ?? this.roleName);
+  // }
 }

@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
+import 'dart:async';
 import '../../domain/entities/servicelead.dart';
 import '../../domain/usecases/servicelead_usecases.dart';
 
@@ -45,6 +46,9 @@ class ServiceLeadController extends GetxController {
   final RxInt annualCount = 0.obs;
   final RxInt wgmCount = 0.obs;
 
+  // Search debouncing
+  Timer? _debounceTimer;
+
   @override
   void onInit() {
     super.onInit();
@@ -53,8 +57,13 @@ class ServiceLeadController extends GetxController {
 
   Future<void> loadServiceLeads() async {
     try {
+      print('DEBUG: loadServiceLeads started');
       isLoading.value = true;
       error.value = '';
+
+      print(
+        'DEBUG: Calling use case with params - page: ${currentPage.value}, limit: ${limit.value}, search: "${searchQuery.value}"',
+      );
 
       final response = await _getServiceLeadsUseCase.execute(
         page: currentPage.value,
@@ -68,6 +77,10 @@ class ServiceLeadController extends GetxController {
         endDate: endDate.value,
       );
 
+      print(
+        'DEBUG: Response received - serviceLeadData count: ${response.serviceLeadData.length}',
+      );
+
       serviceLeads.value = response.serviceLeadData;
       totalPages.value = response.totalPages;
       totalItems.value = response.totalItems;
@@ -77,7 +90,10 @@ class ServiceLeadController extends GetxController {
       totalCount.value = response.count.all;
       annualCount.value = response.count.annual;
       wgmCount.value = response.count.wgm;
+
+      print('DEBUG: Data updated successfully');
     } catch (e) {
+      print('DEBUG: loadServiceLeads error: $e');
       error.value = e.toString();
       Get.snackbar(
         'Error',
@@ -88,6 +104,7 @@ class ServiceLeadController extends GetxController {
       );
     } finally {
       isLoading.value = false;
+      print('DEBUG: loadServiceLeads completed');
     }
   }
 
@@ -97,16 +114,27 @@ class ServiceLeadController extends GetxController {
   }
 
   void searchServiceLeads(String query) {
+    print('DEBUG: searchServiceLeads called with query: "$query"');
     searchQuery.value = query;
     currentPage.value = 1;
     _debounceSearch();
   }
 
   void _debounceSearch() {
-    // Simple debounce - you might want to use a proper debounce implementation
-    Future.delayed(const Duration(milliseconds: 300), () {
-      if (searchQuery.value.length >= 3 || searchQuery.value.isEmpty) {
+    print('DEBUG: _debounceSearch called');
+    // Cancel previous timer if it exists
+    _debounceTimer?.cancel();
+
+    // Create new timer
+    _debounceTimer = Timer(const Duration(milliseconds: 300), () {
+      print(
+        'DEBUG: Debounce timer triggered for query: "${searchQuery.value}"',
+      );
+      if (searchQuery.value.length >= 2 || searchQuery.value.isEmpty) {
+        print('DEBUG: Calling loadServiceLeads from debounce');
         loadServiceLeads();
+      } else {
+        print('DEBUG: Query too short, not calling loadServiceLeads');
       }
     });
   }
@@ -255,5 +283,11 @@ class ServiceLeadController extends GetxController {
     endDate.value = null;
     currentPage.value = 1;
     loadServiceLeads();
+  }
+
+  @override
+  void onClose() {
+    _debounceTimer?.cancel();
+    super.onClose();
   }
 }
